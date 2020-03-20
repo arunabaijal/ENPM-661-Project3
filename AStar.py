@@ -28,26 +28,32 @@ class Node():
     #     else:
     #         return new_position, 'up'
     
+    def moveForward(self):
+        new_position = [self.current[0] + math.cos(0), self.current[1] + math.sin(0), self.current[2] + 0]
+        if not check_node(new_position, self.clear_val):
+            return False
+        else:
+            return new_position, 'right'
     def moveUp30(self):
-        new_position = [self.current[0] * math.cos(math.pi/6), self.current[1] * math.sin(math.pi/6), self.current[2] + math.pi/6]
+        new_position = [self.current[0] + math.cos(math.pi/6), self.current[1] + math.sin(math.pi/6), self.current[2] + math.pi/6]
         if not check_node(new_position, self.clear_val):
             return False
         else:
             return new_position, 'right'
     def moveUp60(self):
-        new_position = [self.current[0] * math.cos(math.pi/3), self.current[1] * math.sin(math.pi/3), self.current[2] + math.pi/3]
+        new_position = [self.current[0] + math.cos(math.pi/3), self.current[1] + math.sin(math.pi/3), self.current[2] + math.pi/3]
         if not check_node(new_position, self.clear_val):
             return False
         else:
             return new_position, 'right'
     def moveDown30(self):
-        new_position = [self.current[0] * math.cos(-math.pi/6), self.current[1] * math.sin(-math.pi/6), self.current[2] - math.pi/6]
+        new_position = [self.current[0] + math.cos(-math.pi/6), self.current[1] + math.sin(-math.pi/6), self.current[2] - math.pi/6]
         if not check_node(new_position, self.clear_val):
             return False
         else:
             return new_position, 'right'
     def moveDown60(self):
-        new_position = [self.current[0] * math.cos(-math.pi/3), self.current[1] * math.sin(-math.pi/3), self.current[2] - math.pi/3]
+        new_position = [self.current[0] + math.cos(-math.pi/3), self.current[1] + math.sin(-math.pi/3), self.current[2] - math.pi/3]
         if not check_node(new_position, self.clear_val):
             return False
         else:
@@ -114,6 +120,18 @@ class Node():
                     f.close()
                     return visitingNode
                 # create all possible children
+                if visitingNode.moveForward():
+                    new, up = visitingNode.moveForward()
+                    new_index = index(new)
+                    new_node = Node(new, visitingNode, visitingNode.cost2come + 1, new_index, visitingNode.clear_val)
+                    if new_index not in visited:
+                        if new_index in accepted:
+                            if accepted[new_index].cost2come > new_node.cost2come:
+                                accepted[new_index] = new_node
+                                toBeVisited.put(new_node)
+                        else:
+                            accepted[new_index] = new_node
+                            toBeVisited.put(new_node)
                 if visitingNode.moveUp30():
                     new, up = visitingNode.moveUp30()
                     new_index = index(new)
@@ -139,7 +157,7 @@ class Node():
                             accepted[new_index] = new_node
                             toBeVisited.put(new_node)
                 if visitingNode.moveDown30():
-                    new, up = visitingNode.moveUp30()
+                    new, up = visitingNode.moveDown30()
                     new_index = index(new)
                     new_node = Node(new, visitingNode, visitingNode.cost2come + 1, new_index, visitingNode.clear_val)
                     if new_index not in visited:
@@ -151,7 +169,7 @@ class Node():
                             accepted[new_index] = new_node
                             toBeVisited.put(new_node)
                 if visitingNode.moveDown60():
-                    new, up = visitingNode.moveUp30()
+                    new, up = visitingNode.moveDown60()
                     new_index = index(new)
                     new_node = Node(new, visitingNode, visitingNode.cost2come + 1, new_index, visitingNode.clear_val)
                     if new_index not in visited:
@@ -414,11 +432,10 @@ def main():
     #
     # print('The goal point you gave is:', goal_point)
     start_time = time.time()
-    start = Node([50, 30, 60], None, 0, index([50, 30, 60]), 1 + 1)
+    start = Node([10, 10, 60], None, 0, index([10, 10, 60]), 1 + 1)
     goal = start.astar([150, 150])
     open('nodePath.txt', 'w').close()
-    if goal != False:
-        generate_path(goal, [50, 30, 60])
+    generate_path(goal, [10, 10, 60])
     end_time = time.time()
     print('Time taken to find path: ' + str(end_time - start_time))
     grid = np.ones((201, 301, 3), dtype=np.uint8) * 255
@@ -469,7 +486,7 @@ def main():
     for point in points:
         pts = point.split(',')
         grid[int(float(pts[1]))][int(float(pts[0]))] = [255, 0, 0]
-        cv2.imshow('graph', np.flip(grid, 0))
+        cv2.imshow('Path', np.flip(grid, 0))
         cv2.waitKey(1)
     file = open('nodePath.txt', 'r')
     points = file.readlines()
