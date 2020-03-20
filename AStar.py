@@ -289,33 +289,43 @@ def check_node(node, clearance):
     a13, b13, c13 = eqn(p13, p14)
     a14, b14, c14 = eqn(p14, p9)
     a15, b15, c15 = eqn(p14, p11)
+
+    l1 = node[0] - 13*node[1] - (-140 + clearance*np.sqrt(1 + 13**2))
+    l2 = node[0] - (185 + clearance)
+    l3 = node[0] + 1.4*node[1] - (290 + clearance*np.sqrt(1 + 1.4**2))
+    l4 = node[0] - 1.2*node[1] - (30 - clearance*np.sqrt(1 + 1.2**2))
+    l5 = node[0] + 1.2*node[1] - (210 - clearance*np.sqrt(1 + 1.2**2))
+    l6 = node[0] - 1*node[1] - (100 - clearance*np.sqrt(1 + 1**2))
     
     if node[0] + clearance >= 300 or node[0] - clearance < 0 or node[1] + clearance >= 200 or node[1] - clearance < 0:
-        # print('Sorry the point is out of bounds! Try again.')
         return False
+
     elif (node[0] - 225) ** 2 + (node[1] - 150) ** 2 <= (25 + clear_val) ** 2:
-        # print('Sorry the point is in the obstacle space! Try again.1')
         return False
+
     elif ((node[0] - 150) ** 2) / (a + clear_val) ** 2 + ((node[1] - 100) ** 2) / (b + clear_val) ** 2 <= 1:
-        # print('Sorry the point is in the obstacle space! Try again.2')
         return False
+
     elif (a1 * node[0] + b1 * node[1] >= c1) and (a2 * node[0] + b2 * node[1] >= c2) and (
             a3 * node[0] + b3 * node[1] >= c3) and (a4 * node[0] + b4 * node[1] >= c4):
-        # print('Sorry the point is in the obstacle space! Try again.3')
         return False
+
     elif (a5 * node[0] + b5 * node[1] >= c5) and (a6 * node[0] + b6 * node[1] >= c6) and (
             a7 * node[0] + b7 * node[1] >= c7) and (a8 * node[0] + b8 * node[1] >= c8):
-        # print('Sorry the point is in the obstacle space! Try again. hello')
         return False
+
     # Dividing concave shape into 2 convex shapes
-    elif (a10 * node[0] + b10 * node[1] >= c10) and (a11 * node[0] + b11 * node[1] >= c11) and (
-            a12 * node[0] + b12 * node[1] >= c12) and (a13 * node[0] + b13 * node[1] >= c13):
-        # print('Sorry the point is in the obstacle space! Try again.4')
+    # elif (a10 * node[0] + b10 * node[1] >= c10) and (a11 * node[0] + b11 * node[1] >= c11) and (
+    #         a12 * node[0] + b12 * node[1] >= c12) and (a13 * node[0] + b13 * node[1] >= c13):
+    #     return False
+
+    # elif (a10 * node[0] + b10 * node[1] <= c10) and (a14 * node[0] + b14 * node[1] >= c14) and (
+    #         a9 * node[0] + b9 * node[1] >= c9):
+    #     return False
+
+    elif (l1 <= 0) & (l2 <= 0) & (l3 <= 0) & (l4 >= 0) & ((l5 >= 0) | (l6 >= 0)):
         return False
-    elif (a10 * node[0] + b10 * node[1] <= c10) and (a14 * node[0] + b14 * node[1] >= c14) and (
-            a9 * node[0] + b9 * node[1] >= c9):
-        # print('Sorry the point is in the obstacle space! Try again.5')
-        return False
+
     else:
         return True
 
@@ -378,28 +388,31 @@ def calc_cost(current, goal, step):
 
 def main():
     # Taking start point and goal point from the user
-    # radius = eval(input('Please enter robot radius value: '))
-    # clearance = eval(input('Please enter robot clearance value: '))
-    # start_point = eval(input('Please enter the start point in this format - [x,y]: '))
-    # while not check_node(start_point, radius + clearance):
-    #     start_point = eval(input('Please enter the start point in this format - [x,y]: '))
-    #
-    # print('The start point you gave is:', start_point)
-    # print('')
-    #
-    # goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-    # while not check_node(goal_point, radius + clearance):
-    #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-    #
-    # print('The goal point you gave is:', goal_point)
+    radius = eval(input('Please enter robot radius value: '))
+    step_size = eval(input('Please enter the step size: '))
+    clearance = eval(input('Please enter robot clearance value: '))
+    start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
+    while not check_node(start_point, radius + clearance):
+        start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
+    
+    print('The start point you gave is:', start_point)
+    print('')
+    
+    goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
+    while not check_node(goal_point, radius + clearance):
+        goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
+    
+    print('The goal point you gave is:', goal_point)
     start_time = time.time()
-    start_pt = [10, 10, 60]
-    end_pt = [150, 150]
     step_size = 2
-    start = Node(start_pt, None, 0, calc_cost(start_pt, end_pt, step_size), 1 + 1, step_size)
-    goal = start.astar(end_pt, step_size)
+    start = Node(start_point, None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, step_size)
+    print('Finding path...')
+    goal = start.astar(goal_point, step_size)
+    if not goal:
+        print('Path not found')
+        exit(-1)
     open('nodePath.txt', 'w').close()
-    generate_path(goal, start_pt)
+    generate_path(goal, start_point)
     end_time = time.time()
     print('Time taken to find path: ' + str(end_time - start_time))
     grid = np.ones((201, 301, 3), dtype=np.uint8) * 255
