@@ -290,12 +290,12 @@ def check_node(node, clearance):
     a14, b14, c14 = eqn(p14, p9)
     a15, b15, c15 = eqn(p14, p11)
 
-    l1 = node[0] - 13*node[1] - (-140 + clearance*np.sqrt(1 + 13**2))
-    l2 = node[0] - (185 + clearance)
-    l3 = node[0] + 1.4*node[1] - (290 + clearance*np.sqrt(1 + 1.4**2))
-    l4 = node[0] - 1.2*node[1] - (30 - clearance*np.sqrt(1 + 1.2**2))
-    l5 = node[0] + 1.2*node[1] - (210 - clearance*np.sqrt(1 + 1.2**2))
-    l6 = node[0] - 1*node[1] - (100 - clearance*np.sqrt(1 + 1**2))
+    l1 = node[1] - 13*node[0] - (-140 + clearance*np.sqrt(1 + 13**2))
+    l2 = node[1] - (185 + clearance)
+    l3 = node[1] + 1.4*node[0] - (290 + clearance*np.sqrt(1 + 1.4**2))
+    l4 = node[1] - 1.2*node[0] - (30 - clearance*np.sqrt(1 + 1.2**2))
+    l5 = node[1] + 1.2*node[0] - (210 - clearance*np.sqrt(1 + 1.2**2))
+    l6 = node[1] - 1*node[0] - (100 - clearance*np.sqrt(1 + 1**2))
     
     if node[0] + clearance >= 300 or node[0] - clearance < 0 or node[1] + clearance >= 200 or node[1] - clearance < 0:
         return False
@@ -393,6 +393,7 @@ def main():
     clearance = eval(input('Please enter robot clearance value: '))
     start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
     while not check_node(start_point, radius + clearance):
+        print('Invalid start point given')
         start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
     
     print('The start point you gave is:', start_point)
@@ -400,6 +401,7 @@ def main():
     
     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
     while not check_node(goal_point, radius + clearance):
+        print('Invalid end point given')
         goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
     
     print('The goal point you gave is:', goal_point)
@@ -454,6 +456,7 @@ def main():
     lines.append(ellipse)
     
     # node[0]-150)**2)/a**2 + ((node[1]-100)**2)/b**2 <= 1:
+    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 200, (301, 201))
     for line in lines:
         for l in line:
             # print(l)
@@ -463,16 +466,19 @@ def main():
     for point in points:
         pts = point.split(',')
         grid[int(float(pts[1]))][int(float(pts[0]))] = [255, 0, 0]
-        cv2.imshow('Path', np.flip(grid, 0))
-        cv2.waitKey(1)
+        # cv2.imshow('Path', np.flip(grid, 0))
+        # cv2.waitKey(1)
+        vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
     points = file.readlines()
     for point in points:
         pts = point.split(',')
         grid[int(float(pts[1]))][int(float(pts[0]))] = [0, 255, 0]
-        cv2.imshow('Path', np.flip(grid, 0))
-        cv2.waitKey(1)
-    cv2.waitKey()
+        vidWriter.write(np.flip(grid, 0))
+        # cv2.imshow('Path', np.flip(grid, 0))
+        # cv2.waitKey(1)
+    # cv2.waitKey()
+    vidWriter.release()
     graph_end_time = time.time()
     print('Time taken to animate paths: ' + str(graph_end_time - end_time))
 
