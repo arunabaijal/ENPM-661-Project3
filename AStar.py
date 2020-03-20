@@ -14,19 +14,6 @@ class Node():
         self.index = ind
         self.clear_val = clear_val
     
-    # def moveDown(self):
-    #     new_position = [self.current[0], self.current[1] - 1]
-    #     if check_node(new_position, self.clear_val):
-    #         return new_position, 'down'
-    #     else:
-    #         return False
-    #
-    # def moveUp(self):
-    #     new_position = [self.current[0], self.current[1] + 1]
-    #     if not check_node(new_position, self.clear_val):
-    #         return False
-    #     else:
-    #         return new_position, 'up'
     
     def moveForward(self):
         new_position = [self.current[0] + math.cos(0), self.current[1] + math.sin(0), self.current[2] + 0]
@@ -59,40 +46,6 @@ class Node():
         else:
             return new_position, 'right'
     
-    # def moveLeft(self):
-    #     new_position = [self.current[0] - 1, self.current[1]]
-    #     if not check_node(new_position, self.clear_val):
-    #         return False
-    #     else:
-    #         return new_position, 'left'
-    
-    # def moveDownRight(self):
-    #     new_position = [self.current[0] + 1, self.current[1] - 1]
-    #     if check_node(new_position, self.clear_val):
-    #         return new_position, 'down right'
-    #     else:
-    #         return False
-    #
-    # def moveDownLeft(self):
-    #     new_position = [self.current[0] - 1, self.current[1] - 1]
-    #     if not check_node(new_position, self.clear_val):
-    #         return False
-    #     else:
-    #         return new_position, 'down left'
-    #
-    # def moveUpRight(self):
-    #     new_position = [self.current[0] + 1, self.current[1] + 1]
-    #     if not check_node(new_position, self.clear_val):
-    #         return False
-    #     else:
-    #         return new_position, 'up right'
-    #
-    # def moveUpLeft(self):
-    #     new_position = [self.current[0] - 1, self.current[1] + 1]
-    #     if not check_node(new_position, self.clear_val):
-    #         return False
-    #     else:
-    #         return new_position, 'up left'
     
     def findRegion(self, current):
         region = [round(current[0] * 2) / 2, round(current[1] * 2) / 2, current[2] / 30]
