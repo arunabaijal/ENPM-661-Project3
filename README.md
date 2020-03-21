@@ -17,7 +17,7 @@ Follow the following steps to successfully run the code:
 2. python3 Astar_rigid.py
 ```
 Upon running the code you would be asked to enter some details. See below for the sample input screenshot:
-![Sample Input][Input_demo.png]
+![Sample Input](Input_demo.png)
 
 ## Sample Output
 
@@ -26,4 +26,4 @@ Upon successfully finding the path the program returns the running time for find
 Time taken to find path: 114.60394072532654 sec
 Time taken to animate paths: 63.39507246017456 sec
 ```
-![Path Found][path_found.png]
+![Path Found](path_found.png)
