@@ -23,31 +23,31 @@ class Node():
         if not check_node(new_position, self.clear_val):
             return False
         else:
-            return new_position, 'right'
+            return new_position, 'Forward'
     def moveUp30(self):
         new_position = [self.current[0] + self.step * math.cos(math.radians(self.current[2] + 30)), self.current[1] + self.step * math.sin(math.radians(self.current[2] + 30)), self.current[2] + 30]
         if not check_node(new_position, self.clear_val):
             return False
         else:
-            return new_position, 'right'
+            return new_position, 'Up 30'
     def moveUp60(self):
         new_position = [self.current[0] + self.step * math.cos(math.radians(self.current[2] + 60)), self.current[1] + self.step * math.sin(math.radians(self.current[2] + 60)), self.current[2] + 60]
         if not check_node(new_position, self.clear_val):
             return False
         else:
-            return new_position, 'right'
+            return new_position, 'Up 60'
     def moveDown30(self):
         new_position = [self.current[0] + self.step * math.cos(math.radians(self.current[2] + 330)), self.current[1] + self.step * math.sin(math.radians(self.current[2] + 330)), self.current[2] + 330]
         if not check_node(new_position, self.clear_val):
             return False
         else:
-            return new_position, 'right'
+            return new_position, 'Down 30'
     def moveDown60(self):
         new_position = [self.current[0] + self.step * math.cos(math.radians(self.current[2] + 300)), self.current[1] + self.step * math.sin(math.radians(self.current[2] + 300)), self.current[2] + 300]
         if not check_node(new_position, self.clear_val):
             return False
         else:
-            return new_position, 'right'
+            return new_position, 'Down 60'
     
     def findRegion(self, current):
         region = [round(current[0] * 2) / 2, round(current[1] * 2) / 2, (current[2] / 30) % 12]
@@ -55,18 +55,17 @@ class Node():
     
     def astar(self, goal, step_size):
         open('Nodes.txt', 'w').close()  # clearing files
-        # accepted = dict()
-        visited = np.zeros((600, 400, 12))  # TODO change value and make it generic
-        accepted = np.full((600, 400, 12), None)  # TODO change value and make it generic
+        visited = np.zeros((600, 400, 12))
+        accepted = np.full((600, 400, 12), None)
         toBeVisited = queue.PriorityQueue()
         toBeVisited.put(self)
-        region = self.findRegion(self.current)
+        region = self.findRegion(self.current)  # creating unique indexing value
         accepted[int(region[0]*2)][int(region[1]*2)][int(region[2])] = self
         f = open("Nodes.txt", "a+")
         while not toBeVisited.empty():
             visitingNode = toBeVisited.get()
             node = visitingNode.current
-            region = self.findRegion(node)
+            region = self.findRegion(node)  # creating unique indexing value
             if visited[int(region[0]*2)][int(region[1]*2)][int(region[2])] == 1:  # check if node already visited
                 continue
             else:
@@ -74,7 +73,6 @@ class Node():
                 f.write(toWrite[1:len(toWrite) - 1] + '\n')
                 if goalReached(node, goal):  # check if goal found
                     f.close()
-                    print('FINAL COST', visitingNode.cost2go + visitingNode.cost2come)
                     return visitingNode
                 # create all possible children
                 if visitingNode.moveForward():
@@ -145,28 +143,11 @@ class Node():
                         else:
                             accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
                             toBeVisited.put(new_node)
-                # accepted[int(region[0]*2)][int(region[1]*2)][int(region[2])] = None
                 visited[int(region[0]*2)][int(region[1]*2)][int(region[2])] = 1
         f.close()
         return False
 
-
-"""
-# Function to check if the given point lies outside the trial map or in the obstacle space
-def check_node(node):
-    if node[0] >= 200 or node[0] < 0 or node[1] >= 100 or node[1] < 0:
-        # print('Sorry the point you entered is out of bounds! Try again.')
-        return False
-    elif 90 <= node[0] <= 110 and 40 <= node[1] <= 60:
-        # print('Sorry the point you entered is in the obstacle space! Try again.')
-        return False
-    elif (node[0]-160)**2 + (node[1]-50)**2 < 15**2:
-        # print('Sorry the point you entered is in the obstacle space! Try again.')
-        return False
-    else:
-        return True
-"""
-
+# Function to check if point is within goal threshold
 def goalReached(node, goal):
     if (node[0]-goal[0])**2 + (node[1]-goal[1])**2 < 1.5**2:
         return True
@@ -185,51 +166,7 @@ def new_points(point, clearance, direction):
     return point
 
 
-# Function to generate new points for the concave polygon
-def new_points_pol(point, point0, point1, point3, clearance, direction):
-    if direction == 0:
-        slope1 = (point1[1] - point[1]) / (point1[0] - point[0])
-        a1 = (90 - math.degrees(math.atan(slope1))) / 2
-        l1 = clearance / math.sin(math.radians(a1))
-        x1 = l1 * math.sin(math.radians(a1))
-        y1 = l1 * math.cos(math.radians(a1))
-        point[0] = point[0] - x1
-        point[1] = point[1] - y1
-        # point[1] = point[1] - np.sqrt(2)*clearance
-    elif direction == 1:
-        point[1] = point[1] - np.sqrt(2) * clearance
-    elif direction == 2:
-        # slope3 = (point1[1] - point[1]) / (point1[0] - point[0])
-        # a3 = 90 - (180 - math.degrees(math.atan(slope3)))
-        # l3 = clearance/math.sin(math.radians(a3))
-        # x3 = l3*math.sin(math.radians(a3))
-        # y3 = l3*math.cos(math.radians(a3))
-        # point[0] = point[0] + x3
-        # point[1] = point[1] - y3
-        point[1] = point[1] - np.sqrt(2) * clearance
-    elif direction == 3:
-        point[0] = point[0] + np.sqrt(2) * clearance
-    elif direction == 4:
-        slope4 = (point[1] - point1[1]) / (point[0] - point1[0])
-        a4 = math.degrees(math.atan(slope4))
-        l4 = clearance / math.sin(math.radians(a4))
-        x4 = l4 * math.cos(math.radians(a4))
-        y4 = l4 * math.sin(math.radians(a4))
-        point[0] = point[0] + x4
-        point[1] = point[1] + y4
-    else:
-        slope5 = (point[1] - point1[1]) / (point[0] - point1[0])
-        a5 = 180 - math.degrees(math.atan(slope5))
-        l5 = clearance / math.sin(math.radians(a5))
-        x5 = l5 * math.cos(math.radians(a5))
-        y5 = l5 * math.sin(math.radians(a5))
-        point[0] = point[0] - x5
-        point[1] = point[1] + y5
-    return point
-
-
 # Function to generate new equation of line acc. to new points
-
 def eqn(point1, point2):
     a = point1[1] - point2[1]
     b = point2[0] - point1[0]
@@ -272,24 +209,6 @@ def check_node(node, clearance):
     a7, b7, c7 = eqn(p7, p8)
     a8, b8, c8 = eqn(p8, p5)
     
-    # New points for concave polygon
-    p9 = new_points_pol([20, 120], [20, 120], [50, 150], [100, 150], clear_val, 0)
-    p10 = new_points_pol([50, 150], [20, 120], [50, 150], [100, 150], clear_val, 1)
-    p11 = new_points_pol([75, 120], [20, 120], [50, 150], [100, 150], clear_val, 2)
-    p12 = new_points_pol([100, 150], [20, 120], [50, 150], [100, 150], clear_val, 3)
-    p13 = new_points_pol([75, 185], [20, 120], [50, 150], [100, 150], clear_val, 4)
-    p14 = new_points_pol([25, 185], [20, 120], [50, 150], [100, 150], clear_val, 5)
-    
-    # New lines for concave polygon
-    
-    a9, b9, c9 = eqn(p9, p10)
-    a10, b10, c10 = eqn(p10, p11)
-    a11, b11, c11 = eqn(p11, p12)
-    a12, b12, c12 = eqn(p12, p13)
-    a13, b13, c13 = eqn(p13, p14)
-    a14, b14, c14 = eqn(p14, p9)
-    a15, b15, c15 = eqn(p14, p11)
-
     l1 = node[1] - 13*node[0] - (-140 + clearance*np.sqrt(1 + 13**2))
     l2 = node[1] - (185 + clearance)
     l3 = node[1] + 1.4*node[0] - (290 + clearance*np.sqrt(1 + 1.4**2))
@@ -314,21 +233,13 @@ def check_node(node, clearance):
             a7 * node[0] + b7 * node[1] >= c7) and (a8 * node[0] + b8 * node[1] >= c8):
         return False
 
-    # Dividing concave shape into 2 convex shapes
-    # elif (a10 * node[0] + b10 * node[1] >= c10) and (a11 * node[0] + b11 * node[1] >= c11) and (
-    #         a12 * node[0] + b12 * node[1] >= c12) and (a13 * node[0] + b13 * node[1] >= c13):
-    #     return False
-
-    # elif (a10 * node[0] + b10 * node[1] <= c10) and (a14 * node[0] + b14 * node[1] >= c14) and (
-    #         a9 * node[0] + b9 * node[1] >= c9):
-    #     return False
-
     elif (l1 <= 0) & (l2 <= 0) & (l3 <= 0) & (l4 >= 0) & ((l5 >= 0) | (l6 >= 0)):
         return False
 
     else:
         return True
 
+# Function to find selected optimal path
 def generate_path(node, root):
     while (not np.array_equal(node.current, root)):
         f = open("nodePath.txt", "r+")
@@ -346,7 +257,7 @@ def generate_path(node, root):
     f.write(toWrite[1:len(toWrite) - 1] + '\n' + content)
     f.close()
 
-
+# Function to generate points on a line
 def get_line(x1, y1, x2, y2):
     points = []
     issteep = abs(y2 - y1) > abs(x2 - x1)
@@ -406,7 +317,6 @@ def main():
     
     print('The goal point you gave is:', goal_point)
     start_time = time.time()
-    step_size = 2
     start = Node(start_point, None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, step_size)
     print('Finding path...')
     goal = start.astar(goal_point, step_size)
@@ -455,29 +365,27 @@ def main():
                 ellipse.append([i, j])
     lines.append(ellipse)
     
-    # node[0]-150)**2)/a**2 + ((node[1]-100)**2)/b**2 <= 1:
-    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 200, (301, 201))
+    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (301, 201))
     for line in lines:
         for l in line:
-            # print(l)
             grid[l[1]][l[0]] = [0, 0, 0]
     file = open('Nodes.txt', 'r')
     points = file.readlines()
     for point in points:
         pts = point.split(',')
         grid[int(float(pts[1]))][int(float(pts[0]))] = [255, 0, 0]
-        # cv2.imshow('Path', np.flip(grid, 0))
-        # cv2.waitKey(1)
         vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
     points = file.readlines()
+    pr_point = start_point
     for point in points:
         pts = point.split(',')
-        grid[int(float(pts[1]))][int(float(pts[0]))] = [0, 255, 0]
+        grid = cv2.arrowedLine(grid, (int(float(pr_point[0])), int(float(pr_point[1]))),
+                               (int(float(pts[0])), int(float(pts[1]))), (0, 255, 0), 1)
+        pr_point = pts
         vidWriter.write(np.flip(grid, 0))
-        # cv2.imshow('Path', np.flip(grid, 0))
-        # cv2.waitKey(1)
-    # cv2.waitKey()
+    for i in range(2000):
+        vidWriter.write(np.flip(grid, 0))
     vidWriter.release()
     graph_end_time = time.time()
     print('Time taken to animate paths: ' + str(graph_end_time - end_time))
