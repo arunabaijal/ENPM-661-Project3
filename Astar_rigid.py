@@ -15,8 +15,8 @@ class Node():
         self.cost2come = cost2come
         self.cost2go = cost2go
         self.clear_val = clear_val
-        self.x = x
-        self.y = y
+        self.x = x*100
+        self.y = y*100
         self.theta = theta
         self.current = [self.x, self.y, self.theta]
         
@@ -183,7 +183,48 @@ def eqn(point1, point2):
 
 def check_node(node, clearance):
     
-    circle_bottom_left = (node[0] - (-2.1))**2 +
+
+    if (node[0]/10.0 < -5.0) or (node[0]/10.0 > 5.0) or (node[1]/10.0 < -5.0) or (node[1]/10.0 > 5.0):
+        print('1')
+        return False
+
+    circle_bottom_left = (node[0]/10.0 - (-2.0))**2 + (node[1]/10.0 - (-3.0))**2
+    if  circle_bottom_left < (1**2):
+        print('2')
+        return False
+
+    circle_bottom_right = (node[0]/10.0 - (2.0))**2 + (node[1]/10.0 - (-3.0))**2
+    if  circle_bottom_right < (1**2):
+        print('3')
+        return False
+
+    circle_top_right = (node[0]/10.0 - (2.0))**2 + (node[1]/10.0 - (3.0))**2
+    if circle_top_right < (1**2):
+        print('4')
+        return False
+
+    circle_center = (node[0]/10.0 - (0.0))**2 + (node[1]/10.0 - (0.0))**2
+    if circle_center < (1**2):
+        print(circle_center, node)
+        print('5')
+        return False
+
+    # Left Square
+    if (node[0]/10.0 > -4.75) and (node[0]/10.0 < -3.25) and (node[1]/10.0 < 0.75) and (node[1]/10.0 > -0.75):
+        print('6')
+        return False
+
+    # Left Top Square
+    if (node[0]/10.0 > -2.75) and (node[0]/10.0 < -1.25) and (node[1]/10.0 < 3.75) and (node[1]/10.0 > 2.25):
+        print('7')
+        return False
+
+    # Right square
+    if (node[0]/10.0 < 4.75) and (node[0]/10.0 > 3.25) and (node[1]/10.0 < 0.75) and (node[1]/10.0 > -0.75):
+        print('8')
+        return False
+
+    return True
 
 # Function to find selected optimal path
 def generate_path(node, root):
@@ -206,6 +247,10 @@ def generate_path(node, root):
 # Function to generate points on a line
 def get_line(x1, y1, x2, y2):
     points = []
+    x1 = int(100*x1)
+    y1 = int(100*y1)
+    x2 = int(100*x2)
+    y2 = int(100*y2)
     issteep = abs(y2 - y1) > abs(x2 - x1)
     if issteep:
         x1, y1 = y1, x1
@@ -248,73 +293,94 @@ def main():
     radius = 1
     step_size = 1
     clearance = 1
-    start_point = [5,5,0]
-    # while not check_node(start_point, radius + clearance):
-    #     print('Invalid start point given')
-    #     start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
+    start_point = [0,1.5,0]
+    while not check_node([0,15,0], radius + clearance):
+        print('Invalid start point given')
+        exit(-1)
+        # start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
     
     print('The start point you gave is:', start_point)
     print('')
     
-    goal_point = [150,150]
-    # while not check_node(goal_point, radius + clearance):
-    #     print('Invalid end point given')
+    goal_point = [4,5]
+    while not check_node([40,50], radius + clearance):
+        print('Invalid end point given')
+        exit(-1)
     #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
     
     print('The goal point you gave is:', goal_point)
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    goal = start.astar(goal_point, step_size, 1, 5)
-    if not goal:
-        print('Path not found')
-        exit(-1)
-    open('nodePath.txt', 'w').close()
-    generate_path(goal, start_point)
-    end_time = time.time()
-    print('Time taken to find path: ' + str(end_time - start_time))
-    grid = np.ones((201, 301, 3), dtype=np.uint8) * 255
+    # goal = start.astar(goal_point, step_size, 1, 5)
+    # if not goal:
+    #     print('Path not found')
+    #     exit(-1)
+    # open('nodePath.txt', 'w').close()
+    # generate_path(goal, start_point)
+    # end_time = time.time()
+    # print('Time taken to find path: ' + str(end_time - start_time))
+    grid = np.ones((1021, 1021, 3), dtype=np.uint8) * 255
     lines = []
-    lines.append(get_line(0, 0, 300, 0))
-    lines.append(get_line(0, 0, 0, 200))
-    lines.append(get_line(300, 0, 300, 200))
-    lines.append(get_line(0, 200, 300, 200))
+    # Left Square
+    lines.append(get_line(-4.75, 0.75, -3.25, 0.75))
+    lines.append(get_line(-4.75, 0.75, -4.75, -0.75))
+    lines.append(get_line(-4.75, -0.75, -3.25, -0.75))
+    lines.append(get_line(-3.25, -0.75, -3.25, 0.75))
     
-    lines.append(get_line(200, 30, 225, 45))
-    lines.append(get_line(225, 45, 250, 30))
-    lines.append(get_line(250, 30, 225, 15))
-    lines.append(get_line(225, 15, 200, 30))
+    lines.append(get_line(-2.75, 3.75, -1.25, 3.75))
+    lines.append(get_line(-2.75, 3.75, -2.75, 2.25))
+    lines.append(get_line(-2.75, 2.25, -1.25, 2.25))
+    lines.append(get_line(-1.25, 2.25, -1.25, 3.75))
     
-    lines.append(get_line(95, 30, 100, 38))
-    lines.append(get_line(100, 38, 35, 76))
-    lines.append(get_line(35, 76, 30, 67))
-    lines.append(get_line(30, 67, 95, 30))
+    lines.append(get_line(4.75, 0.75, 3.25, 0.75))
+    lines.append(get_line(4.75, 0.75, 4.75, -0.75))
+    lines.append(get_line(4.75, -0.75, 3.25, -0.75))
+    lines.append(get_line(3.25, -0.75, 3.25, 0.75))
     
-    lines.append(get_line(20, 120, 25, 185))
-    lines.append(get_line(25, 185, 75, 185))
-    lines.append(get_line(75, 185, 100, 150))
-    lines.append(get_line(100, 150, 75, 120))
-    lines.append(get_line(75, 120, 50, 150))
-    lines.append(get_line(50, 150, 20, 120))
+    index = np.mgrid[-510:511, -510:511]
+
+    # Left Bottom Circle
+    result_left_bottom = (index[0] - (-200))**2 + (index[1] - (-300))**2
+    inds = np.where(result_left_bottom < 100.0)
+    grid[inds] = [0,0,0]
+
+    # Right Bottom Circle
+    result_left_bottom = (index[0] - (200))**2 + (index[1] - (-300))**2
+    inds = np.where(result_left_bottom < 100.0)
+    grid[inds] = [0,0,0]
+
+    # Center
+    result_left_bottom = (index[0] - 0)**2 + (index[1] - 0)**2
+    inds = np.where(result_left_bottom < 100.0)
+    grid[inds] = [0,0,0]
+
+    # Right Top Circle
+    result_left_bottom = (index[0] - (200))**2 + (index[1] - (300))**2
+    inds = np.where(result_left_bottom < 100.0)
+    grid[inds] = [0,0,0]
+
+    # circle = []
+    # for i in range(200, 250):
+    #     for j in range(125, 175):
+    #         if (i - 225) ** 2 + (j - 150) ** 2 <= 25 ** 2:
+    #             circle.append([i, j])
+    # lines.append(circle)
     
-    circle = []
-    for i in range(200, 250):
-        for j in range(125, 175):
-            if (i - 225) ** 2 + (j - 150) ** 2 <= 25 ** 2:
-                circle.append([i, j])
-    lines.append(circle)
+    # ellipse = []
+    # for i in range(110, 190):
+    #     for j in range(80, 120):
+    #         if (i - 150) ** 2 / 40 ** 2 + (j - 100) ** 2 / 20 ** 2 <= 1:
+    #             ellipse.append([i, j])
+    # lines.append(ellipse)
     
-    ellipse = []
-    for i in range(110, 190):
-        for j in range(80, 120):
-            if (i - 150) ** 2 / 40 ** 2 + (j - 100) ** 2 / 20 ** 2 <= 1:
-                ellipse.append([i, j])
-    lines.append(ellipse)
-    
-    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (301, 201))
+    # vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (301, 201))
     for line in lines:
         for l in line:
             grid[l[1]][l[0]] = [0, 0, 0]
+    cv2.imshow("grid", grid)
+    cv2.waitKey(0)
+    exit(-1)
     file = open('Nodes.txt', 'r')
     points = file.readlines()
     for point in points:
