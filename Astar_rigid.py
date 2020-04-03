@@ -11,12 +11,10 @@ class Node():
     L = 2
     dt = 1
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
-        # self.current = start_point
         self.parent = parent
         self.cost2come = cost2come
         self.cost2go = cost2go
         self.clear_val = clear_val
-        # self.step = step
         self.x = x
         self.y = y
         self.theta = theta
@@ -43,10 +41,10 @@ class Node():
         dtheta=(Node.r/Node.L)*(RW-LW)*Node.dt
         step = np.sqrt(dx**2 + dy**2)
         # print('dy', dy)
-        return self.x + dx, self.y + dy, self.theta + dtheta, step
+        return self.x + dx, self.y + dy, self.theta + np.rad2deg(dtheta), step
     
     def findRegion(self, current):
-        region = [round(current[0] * 2) / 2, round(current[1] * 2) / 2, current[2] % 360]
+        region = [round(current[0] * 2) / 2, round(current[1] * 2) / 2, (current[2] + 360) % 360]
         return region
     
     def astar(self, goal, step_size, rpm1, rpm2):
@@ -60,8 +58,8 @@ class Node():
         f = open("Nodes.txt", "a+")
         steps_with_cost = self.possible_steps(rpm1, rpm2)
         while not toBeVisited.empty():
-            # print(toBeVisited)
             visitingNode = toBeVisited.get()
+            print(visitingNode.current)
             node = visitingNode.current
             region = self.findRegion(node)  # creating unique indexing value
             if visited[int(region[0]*2)][int(region[1]*2)][int(region[2])] == 1:  # check if node already visited
@@ -75,7 +73,7 @@ class Node():
                 
                 for i in steps_with_cost:
                     new_x, new_y, new_theta, new_step = visitingNode.do_action(i[0], i[1])
-                    print(new_x, new_y, new_theta)
+                    # print(new_x, new_y, new_theta)
                     new_region = self.findRegion([new_x, new_y, new_theta])
                     # print(new_region)
                     if check_node([new_x, new_y], visitingNode.clear_val) and visited[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] == 0:
@@ -87,75 +85,6 @@ class Node():
                         else:
                             accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] = new_node
                             toBeVisited.put(new_node)
-                # create all possible children
-                # if visitingNode.moveForward():
-                #     new, up = visitingNode.moveForward()
-                #     new_node = Node(new, visitingNode, visitingNode.cost2come + step_size, calc_cost(new, goal, step_size), visitingNode.clear_val, step_size)
-                #     new_region = self.findRegion(new)
-                #     if visited[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] == 0:
-                #         if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] is not None:
-                #             if accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])].cost2come + accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])].cost2go > new_node.cost2come + new_node.cost2go:
-                #                 accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] = new_node
-                #                 toBeVisited.put(new_node)
-                #         else:
-                #             accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] = new_node
-                #             toBeVisited.put(new_node)
-                # if visitingNode.moveUp30():
-                #     new, up = visitingNode.moveUp30()
-                #     new_node = Node(new, visitingNode, visitingNode.cost2come + step_size, calc_cost(new, goal, step_size), visitingNode.clear_val, step_size)
-                #     new_region = self.findRegion(new)
-                #     if visited[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] == 0:
-                #         if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] is not None:
-                #             if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])].cost2come + \
-                #                     accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][
-                #                         int(new_region[2])].cost2go > new_node.cost2come + new_node.cost2go:
-                #                 accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #                 toBeVisited.put(new_node)
-                #         else:
-                #             accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #             toBeVisited.put(new_node)
-                # if visitingNode.moveUp60():
-                #     new, up = visitingNode.moveUp60()
-                #     new_node = Node(new, visitingNode, visitingNode.cost2come + step_size, calc_cost(new, goal, step_size), visitingNode.clear_val, step_size)
-                #     new_region = self.findRegion(new)
-                #     if visited[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] == 0:
-                #         if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] is not None:
-                #             if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])].cost2come + \
-                #                     accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][
-                #                         int(new_region[2])].cost2go > new_node.cost2come + new_node.cost2go:
-                #                 accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #                 toBeVisited.put(new_node)
-                #         else:
-                #             accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #             toBeVisited.put(new_node)
-                # if visitingNode.moveDown30():
-                #     new, up = visitingNode.moveDown30()
-                #     new_node = Node(new, visitingNode, visitingNode.cost2come + step_size, calc_cost(new, goal, step_size), visitingNode.clear_val, step_size)
-                #     new_region = self.findRegion(new)
-                #     if visited[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] == 0:
-                #         if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] is not None:
-                #             if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])].cost2come + \
-                #                     accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][
-                #                         int(new_region[2])].cost2go > new_node.cost2come + new_node.cost2go:
-                #                 accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #                 toBeVisited.put(new_node)
-                #         else:
-                #             accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #             toBeVisited.put(new_node)
-                # if visitingNode.moveDown60():
-                #     new, up = visitingNode.moveDown60()
-                #     new_node = Node(new, visitingNode, visitingNode.cost2come + step_size, calc_cost(new, goal, step_size), visitingNode.clear_val, step_size)
-                #     new_region = self.findRegion(new)
-                #     if visited[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] == 0:
-                #         if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] is not None:
-                #             if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])].cost2come + \
-                #                     accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][
-                #                         int(new_region[2])].cost2go > new_node.cost2come + new_node.cost2go:
-                #                 accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #                 toBeVisited.put(new_node)
-                #         else:
-                #             accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] = new_node
-                #             toBeVisited.put(new_node)
                 visited[int(region[0]*2)][int(region[1]*2)][int(region[2])] = 1
         f.close()
         return False
@@ -308,7 +237,7 @@ def get_line(x1, y1, x2, y2):
 
 # Functions for the action space - Up, Down, Left, Right, Up-Right, Down-Right, Up-left, Down-left
 def calc_cost(current, goal, step):
-    return np.sqrt((current[0] - goal[0]) ** 2 + (current[1] - goal[1]) ** 2) + step
+    return np.sqrt((current[0] - goal[0]) ** 2 + (current[1] - goal[1]) ** 2)
 
 def main():
     # Taking start point and goal point from the user
@@ -323,7 +252,7 @@ def main():
     print('The start point you gave is:', start_point)
     print('')
     
-    goal_point = [10,5]
+    goal_point = [150,150]
     # while not check_node(goal_point, radius + clearance):
     #     print('Invalid end point given')
     #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
@@ -332,7 +261,7 @@ def main():
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    goal = start.astar(goal_point, step_size, 1, 2)
+    goal = start.astar(goal_point, step_size, 1, 5)
     if not goal:
         print('Path not found')
         exit(-1)
