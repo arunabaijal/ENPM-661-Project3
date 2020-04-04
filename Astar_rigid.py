@@ -7,16 +7,16 @@ import cv2
 
 
 class Node():
-    r = 1
-    L = 2
+    r = 1*5
+    L = 2*5
     dt = 1
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
         self.cost2come = cost2come
         self.cost2go = cost2go
         self.clear_val = clear_val
-        self.x = x*100
-        self.y = y*100
+        self.x = x
+        self.y = y
         self.theta = theta
         self.current = [self.x, self.y, self.theta]
         
@@ -44,7 +44,7 @@ class Node():
         return self.x + dx, self.y + dy, self.theta + np.rad2deg(dtheta), step
     
     def findRegion(self, current):
-        region = [round(current[0] * 2) / 2, round(current[1] * 2) / 2, (current[2] + 360) % 360]
+        region = [current[0], current[1], (current[2] + 360) % 360]
         return region
     
     def astar(self, goal, step_size, rpm1, rpm2):
@@ -56,7 +56,7 @@ class Node():
         toBeVisited = queue.PriorityQueue()
         toBeVisited.put(self)
         region = self.findRegion(self.current)  # creating unique indexing value
-        accepted[(int(region[0]*2), int(region[1]*2), int(region[2]))] = self
+        accepted[(int(region[0]), int(region[1]), int(region[2]))] = self
         f = open("Nodes.txt", "a+")
         steps_with_cost = self.possible_steps(rpm1, rpm2)
         while not toBeVisited.empty():
@@ -64,7 +64,7 @@ class Node():
             print(visitingNode.current)
             node = visitingNode.current
             region = self.findRegion(node)  # creating unique indexing value
-            key = (int(region[0]*2), int(region[1]*2), int(region[2]))
+            key = (int(region[0]), int(region[1]), int(region[2]))
             if key in visited.keys():  # check if node already visited
                 continue
             else:
@@ -79,7 +79,7 @@ class Node():
                     # print(new_x, new_y, new_theta)
                     new_region = self.findRegion([new_x, new_y, new_theta])
                     # print(new_region)
-                    new_keys = (int(new_region[0]*2), int(new_region[1]*2), int(new_region[2]))
+                    new_keys = (int(new_region[0]), int(new_region[1]), int(new_region[2]))
                     if check_node([new_x, new_y], visitingNode.clear_val) and (new_keys not in visited.keys()):
                         new_node = Node(visitingNode, visitingNode.cost2come + new_step, calc_cost([new_x, new_y], goal,new_step), visitingNode.clear_val, new_x, new_y, new_theta)
                         if new_keys in accepted.keys():
@@ -89,7 +89,7 @@ class Node():
                         else:
                             accepted[new_keys] = new_node
                             toBeVisited.put(new_node)
-                visited[(int(region[0]*2), int(region[1]*2), int(region[2]))] = visitingNode
+                visited[(int(region[0]), int(region[1]), int(region[2]))] = visitingNode
         f.close()
         return False
 
@@ -189,43 +189,43 @@ def check_node(node, clearance):
     
 
     if (node[0]/100.0 < -5.0) or (node[0]/100.0 > 5.0) or (node[1]/100.0 < -5.0) or (node[1]/100.0 > 5.0):
-        print('1')
+        # print('1')
         return False
 
     circle_bottom_left = (node[0]/100.0 - (-2.0))**2 + (node[1]/100.0 - (-3.0))**2
     if  circle_bottom_left < (1**2):
-        print('2')
+        # print('2')
         return False
 
     circle_bottom_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (-3.0))**2
     if  circle_bottom_right < (1**2):
-        print('3')
+        # print('3')
         return False
 
     circle_top_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (3.0))**2
     if circle_top_right < (1**2):
-        print('4')
+        # print('4')
         return False
 
     circle_center = (node[0]/100.0 - (0.0))**2 + (node[1]/100.0 - (0.0))**2
     if circle_center < (1**2):
-        print(circle_center, node)
-        print('5')
+        # print(circle_center, node)
+        # print('5')
         return False
 
     # Left Square
-    if (node[0]/10.0 > -4.75) and (node[0]/10.0 < -3.25) and (node[1]/10.0 < 0.75) and (node[1]/10.0 > -0.75):
-        print('6')
+    if (node[0]/100.0 > -4.75) and (node[0]/100.0 < -3.25) and (node[1]/100.0 < 0.75) and (node[1]/100.0 > -0.75):
+        # print('6')
         return False
 
     # Left Top Square
-    if (node[0]/10.0 > -2.75) and (node[0]/10.0 < -1.25) and (node[1]/10.0 < 3.75) and (node[1]/10.0 > 2.25):
-        print('7')
+    if (node[0]/100.0 > -2.75) and (node[0]/100.0 < -1.25) and (node[1]/100.0 < 3.75) and (node[1]/100.0 > 2.25):
+        # print('7')
         return False
 
     # Right square
-    if (node[0]/10.0 < 4.75) and (node[0]/10.0 > 3.25) and (node[1]/10.0 < 0.75) and (node[1]/10.0 > -0.75):
-        print('8')
+    if (node[0]/100.0 < 4.75) and (node[0]/100.0 > 3.25) and (node[1]/100.0 < 0.75) and (node[1]/100.0 > -0.75):
+        # print('8')
         return False
 
     return True
@@ -297,7 +297,7 @@ def main():
     radius = 1
     step_size = 1
     clearance = 1
-    start_point = [0,1.5,0]
+    start_point = [0,150,0]
     while not check_node([0,150,0], radius + clearance):
         print('Invalid start point given')
         exit(-1)
@@ -306,8 +306,8 @@ def main():
     print('The start point you gave is:', start_point)
     print('')
     
-    goal_point = [4,5]
-    while not check_node([400,500], radius + clearance):
+    goal_point = [400,500]
+    while not check_node([10,250], radius + clearance):
         print('Invalid end point given')
         exit(-1)
     #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
@@ -378,7 +378,7 @@ def main():
     #             ellipse.append([i, j])
     # lines.append(ellipse)
     
-    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (301, 201))
+    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (1021, 1021))
     for line in lines:
         for l in line:
             grid[l[1]][l[0]] = [0, 0, 0]
