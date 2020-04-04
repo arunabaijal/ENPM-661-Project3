@@ -307,7 +307,7 @@ def main():
     print('')
     
     goal_point = [400,500]
-    while not check_node([10,250], radius + clearance):
+    while not check_node([400,500], radius + clearance):
         print('Invalid end point given')
         exit(-1)
     #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
