@@ -49,12 +49,14 @@ class Node():
     
     def astar(self, goal, step_size, rpm1, rpm2):
         open('Nodes.txt', 'w').close()  # clearing files
-        visited = np.zeros((600, 400, 360))
-        accepted = np.full((600, 400, 360), None)
+        # visited = np.zeros((600*100, 400*100, 360), dtype=np.uint8)
+        # accepted = np.full((600*100, 400*100, 360), None, dtype=np.uint8)
+        visited = {}
+        accepted = {}
         toBeVisited = queue.PriorityQueue()
         toBeVisited.put(self)
         region = self.findRegion(self.current)  # creating unique indexing value
-        accepted[int(region[0]*2)][int(region[1]*2)][int(region[2])] = self
+        accepted[(int(region[0]*2), int(region[1]*2), int(region[2]))] = self
         f = open("Nodes.txt", "a+")
         steps_with_cost = self.possible_steps(rpm1, rpm2)
         while not toBeVisited.empty():
@@ -62,7 +64,8 @@ class Node():
             print(visitingNode.current)
             node = visitingNode.current
             region = self.findRegion(node)  # creating unique indexing value
-            if visited[int(region[0]*2)][int(region[1]*2)][int(region[2])] == 1:  # check if node already visited
+            key = (int(region[0]*2), int(region[1]*2), int(region[2]))
+            if key in visited.keys():  # check if node already visited
                 continue
             else:
                 toWrite = str(node)
@@ -76,16 +79,17 @@ class Node():
                     # print(new_x, new_y, new_theta)
                     new_region = self.findRegion([new_x, new_y, new_theta])
                     # print(new_region)
-                    if check_node([new_x, new_y], visitingNode.clear_val) and visited[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] == 0:
+                    new_keys = (int(new_region[0]*2), int(new_region[1]*2), int(new_region[2]))
+                    if check_node([new_x, new_y], visitingNode.clear_val) and (new_keys not in visited.keys()):
                         new_node = Node(visitingNode, visitingNode.cost2come + new_step, calc_cost([new_x, new_y], goal,new_step), visitingNode.clear_val, new_x, new_y, new_theta)
-                        if accepted[int(new_region[0] * 2)][int(new_region[1] * 2)][int(new_region[2])] is not None:
-                            if accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])].cost2come + accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])].cost2go > new_node.cost2come + new_node.cost2go:
-                                accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] = new_node
+                        if new_keys in accepted.keys():
+                            if accepted[new_keys].cost2come + accepted[new_keys].cost2go > new_node.cost2come + new_node.cost2go:
+                                accepted[new_keys] = new_node
                                 toBeVisited.put(new_node)
                         else:
-                            accepted[int(new_region[0]*2)][int(new_region[1]*2)][int(new_region[2])] = new_node
+                            accepted[new_keys] = new_node
                             toBeVisited.put(new_node)
-                visited[int(region[0]*2)][int(region[1]*2)][int(region[2])] = 1
+                visited[(int(region[0]*2), int(region[1]*2), int(region[2]))] = visitingNode
         f.close()
         return False
 
@@ -184,26 +188,26 @@ def eqn(point1, point2):
 def check_node(node, clearance):
     
 
-    if (node[0]/10.0 < -5.0) or (node[0]/10.0 > 5.0) or (node[1]/10.0 < -5.0) or (node[1]/10.0 > 5.0):
+    if (node[0]/100.0 < -5.0) or (node[0]/100.0 > 5.0) or (node[1]/100.0 < -5.0) or (node[1]/100.0 > 5.0):
         print('1')
         return False
 
-    circle_bottom_left = (node[0]/10.0 - (-2.0))**2 + (node[1]/10.0 - (-3.0))**2
+    circle_bottom_left = (node[0]/100.0 - (-2.0))**2 + (node[1]/100.0 - (-3.0))**2
     if  circle_bottom_left < (1**2):
         print('2')
         return False
 
-    circle_bottom_right = (node[0]/10.0 - (2.0))**2 + (node[1]/10.0 - (-3.0))**2
+    circle_bottom_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (-3.0))**2
     if  circle_bottom_right < (1**2):
         print('3')
         return False
 
-    circle_top_right = (node[0]/10.0 - (2.0))**2 + (node[1]/10.0 - (3.0))**2
+    circle_top_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (3.0))**2
     if circle_top_right < (1**2):
         print('4')
         return False
 
-    circle_center = (node[0]/10.0 - (0.0))**2 + (node[1]/10.0 - (0.0))**2
+    circle_center = (node[0]/100.0 - (0.0))**2 + (node[1]/100.0 - (0.0))**2
     if circle_center < (1**2):
         print(circle_center, node)
         print('5')
@@ -247,10 +251,10 @@ def generate_path(node, root):
 # Function to generate points on a line
 def get_line(x1, y1, x2, y2):
     points = []
-    x1 = int(100*x1)
-    y1 = int(100*y1)
-    x2 = int(100*x2)
-    y2 = int(100*y2)
+    x1 = int(100*(x1 + 5.1))
+    y1 = int(100*(y1 + 5.1))
+    x2 = int(100*(x2 + 5.1))
+    y2 = int(100*(y2 + 5.1))
     issteep = abs(y2 - y1) > abs(x2 - x1)
     if issteep:
         x1, y1 = y1, x1
@@ -294,7 +298,7 @@ def main():
     step_size = 1
     clearance = 1
     start_point = [0,1.5,0]
-    while not check_node([0,15,0], radius + clearance):
+    while not check_node([0,150,0], radius + clearance):
         print('Invalid start point given')
         exit(-1)
         # start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
@@ -303,7 +307,7 @@ def main():
     print('')
     
     goal_point = [4,5]
-    while not check_node([40,50], radius + clearance):
+    while not check_node([400,500], radius + clearance):
         print('Invalid end point given')
         exit(-1)
     #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
@@ -312,14 +316,14 @@ def main():
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    # goal = start.astar(goal_point, step_size, 1, 5)
-    # if not goal:
-    #     print('Path not found')
-    #     exit(-1)
-    # open('nodePath.txt', 'w').close()
-    # generate_path(goal, start_point)
-    # end_time = time.time()
-    # print('Time taken to find path: ' + str(end_time - start_time))
+    goal = start.astar(goal_point, step_size, 1, 5)
+    if not goal:
+        print('Path not found')
+        exit(-1)
+    open('nodePath.txt', 'w').close()
+    generate_path(goal, start_point)
+    end_time = time.time()
+    print('Time taken to find path: ' + str(end_time - start_time))
     grid = np.ones((1021, 1021, 3), dtype=np.uint8) * 255
     lines = []
     # Left Square
@@ -338,26 +342,26 @@ def main():
     lines.append(get_line(4.75, -0.75, 3.25, -0.75))
     lines.append(get_line(3.25, -0.75, 3.25, 0.75))
     
-    index = np.mgrid[-510:511, -510:511]
+    index = np.mgrid[0:1021, 0:1021]
 
     # Left Bottom Circle
-    result_left_bottom = (index[0] - (-200))**2 + (index[1] - (-300))**2
-    inds = np.where(result_left_bottom < 100.0)
+    result_left_bottom = (index[0] - (-300+510))**2 + (index[1] - (-200+510))**2
+    inds = np.where(result_left_bottom < 10000.0)
     grid[inds] = [0,0,0]
 
     # Right Bottom Circle
-    result_left_bottom = (index[0] - (200))**2 + (index[1] - (-300))**2
-    inds = np.where(result_left_bottom < 100.0)
+    result_right_bottom = (index[1] - (200+510))**2 + (index[0] - (-300+510))**2
+    inds = np.where(result_right_bottom < 10000.0)
     grid[inds] = [0,0,0]
 
     # Center
-    result_left_bottom = (index[0] - 0)**2 + (index[1] - 0)**2
-    inds = np.where(result_left_bottom < 100.0)
+    result_center = (index[1] - (0+510))**2 + (index[0] - (0+510))**2
+    inds = np.where(result_center < 10000.0)
     grid[inds] = [0,0,0]
 
     # Right Top Circle
-    result_left_bottom = (index[0] - (200))**2 + (index[1] - (300))**2
-    inds = np.where(result_left_bottom < 100.0)
+    result_top = (index[1] - (200+510))**2 + (index[0] - (300+510))**2
+    inds = np.where(result_top < 10000.0)
     grid[inds] = [0,0,0]
 
     # circle = []
@@ -374,26 +378,23 @@ def main():
     #             ellipse.append([i, j])
     # lines.append(ellipse)
     
-    # vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (301, 201))
+    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (301, 201))
     for line in lines:
         for l in line:
             grid[l[1]][l[0]] = [0, 0, 0]
-    cv2.imshow("grid", grid)
-    cv2.waitKey(0)
-    exit(-1)
     file = open('Nodes.txt', 'r')
     points = file.readlines()
     for point in points:
         pts = point.split(',')
-        grid[int(float(pts[1]))][int(float(pts[0]))] = [255, 0, 0]
+        grid[int(float(pts[1]))+510][int(float(pts[0]))+510] = [255, 0, 0]
         vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
     points = file.readlines()
     pr_point = start_point
     for point in points:
         pts = point.split(',')
-        grid = cv2.arrowedLine(grid, (int(float(pr_point[0])), int(float(pr_point[1]))),
-                               (int(float(pts[0])), int(float(pts[1]))), (0, 255, 0), 1)
+        grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 510, int(float(pr_point[1])) + 510),
+                               (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
         pr_point = pts
         vidWriter.write(np.flip(grid, 0))
     for i in range(2000):
