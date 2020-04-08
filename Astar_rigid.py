@@ -7,8 +7,8 @@ import cv2
 
 
 class Node():
-    r = 0.076*100
-    L = 0.354*100
+    r = 38*100/1000
+    L = 354*100/1000
     dt = 1
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
@@ -36,8 +36,10 @@ class Node():
         return steps_with_cost
     
     def do_action(self, LW, RW):
-        dx=Node.r*(LW+RW)*math.cos(np.deg2rad(self.theta))*Node.dt
-        dy=Node.r*(LW+RW)*math.sin(np.deg2rad(self.theta))*Node.dt
+        LW = LW*2*np.pi/60
+        RW = RW*2*np.pi/60
+        dx=(Node.r/2)*(LW+RW)*math.cos(np.deg2rad(self.theta))*Node.dt
+        dy=(Node.r/2)*(LW+RW)*math.sin(np.deg2rad(self.theta))*Node.dt
         dtheta=(Node.r/Node.L)*(RW-LW)*Node.dt
         step = np.sqrt(dx**2 + dy**2)
         # print('dy', dy)
@@ -242,16 +244,22 @@ def generate_path(node, root):
         f = open("nodePath.txt", "r+")
         content = f.read()
         f.seek(0, 0)
-        toWrite = str(node.current)
+        dx = (node.x - node.parent.x)/(Node.dt*100)
+        dy = (node.y - node.parent.y)/(Node.dt*100)
+        dtheta = (node.theta - node.parent.theta)/(Node.dt*100)
+        toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
         node = node.parent
-        f.write(toWrite[1:len(toWrite) - 1] + '\n' + content)
+        f.write(toWrite + '\n' + content)
         f.close()
     
     f = open("nodePath.txt", "r+")
     content = f.read()
     f.seek(0, 0)
-    toWrite = str(node.current)
-    f.write(toWrite[1:len(toWrite) - 1] + '\n' + content)
+    dx = 0
+    dy = 0
+    dtheta = 0
+    toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
+    f.write(toWrite + '\n' + content)
     f.close()
 
 # Function to generate points on a line
@@ -300,7 +308,7 @@ def calc_cost(current, goal, step):
 
 def main():
     # Taking start point and goal point from the user
-    radius = 0.1*100
+    radius = 35.4/2
     step_size = 1
     clearance = 0.1*100
     start_point = [-400,-300,0]
@@ -322,7 +330,7 @@ def main():
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    goal = start.astar(goal_point, step_size, 1, 2)
+    goal = start.astar(goal_point, step_size, 10, 15)
     if not goal:
         print('Path not found')
         exit(-1)
