@@ -38,20 +38,40 @@
 
 import rospy
 from std_msgs.msg import String
+from geometry_msgs.msg import Twist
+from turtle_actionlib.msg import Velocity
+import numpy as np
+
 
 def talker():
-    pub = rospy.Publisher('chatter', String, queue_size=10)
+    pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10) # 10hz
-    while not rospy.is_shutdown():
-        f = open("/home/aruna/catkin_ws/src/project3/scripts/nodePath.txt","r+")
-        lines = f.readlines()
-        for loc in lines:
-          hello_str = loc
-          rospy.loginfo(hello_str)
-          pub.publish(hello_str)
-          rate.sleep()
-        break
+    
+    new_location = Twist()
+    f = open("/home/aruna/catkin_ws/src/project3/scripts/nodePath.txt", "r+")
+    lines = f.readlines()
+    linesread = [line.rstrip() for line in lines]
+    for loc in linesread:
+        rate = rospy.Rate(10)  # 10hz
+        if len(loc.split(',')) < 6:
+            continue
+        new_location.linear.x = 0  # np.sqrt(float(loc.split(',')[3]) ** 2 + float(loc.split(',')[4]) ** 2)
+        # new_location.linear.y = -float(loc.split(',')[4])
+        new_location.angular.z = 3.14  # np.deg2rad(float(loc.split(',')[5]) * 100)
+        # print("----------------")
+        # print(new_location)
+        t0 = rospy.Time.now().to_sec()
+        while not rospy.is_shutdown():
+            t1 = rospy.Time.now().to_sec()
+            print(t1 - t0)
+            if t1 - t0 >= 10:
+                break
+            # hello_str = loc
+            # print(new_location)
+            # rospy.loginfo(new_location)
+            pub.publish(new_location)
+            rate.sleep()
+
 
 if __name__ == '__main__':
     try:
