@@ -7,8 +7,8 @@ import cv2
 
 
 class Node():
-    r = 1*5
-    L = 2*5
+    r = 0.076*100
+    L = 0.354*100
     dt = 1
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
@@ -188,43 +188,49 @@ def eqn(point1, point2):
 def check_node(node, clearance):
     
 
-    if (node[0]/100.0 < -5.0) or (node[0]/100.0 > 5.0) or (node[1]/100.0 < -5.0) or (node[1]/100.0 > 5.0):
+    if (node[0]/100.0 < -5.0+clearance/100) or (node[0]/100.0 > (5.0-clearance/100)) or \
+    					(node[1]/100.0 < -5.0+clearance/100) or (node[1]/100.0 > 5.0-clearance/100):
         # print('1')
         return False
 
     circle_bottom_left = (node[0]/100.0 - (-2.0))**2 + (node[1]/100.0 - (-3.0))**2
-    if  circle_bottom_left < (1**2):
+    if  circle_bottom_left < ((1+clearance/100)**2):
+        # print(((1+clearance/100)**2))
         # print('2')
         return False
 
     circle_bottom_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (-3.0))**2
-    if  circle_bottom_right < (1**2):
+    if  circle_bottom_right < ((1+clearance/100)**2):
+        # print(((1+clearance/100)**2))
         # print('3')
         return False
 
     circle_top_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (3.0))**2
-    if circle_top_right < (1**2):
+    if circle_top_right < ((1+clearance/100)**2):
         # print('4')
         return False
 
     circle_center = (node[0]/100.0 - (0.0))**2 + (node[1]/100.0 - (0.0))**2
-    if circle_center < (1**2):
+    if circle_center < ((1+clearance/100)**2):
         # print(circle_center, node)
         # print('5')
         return False
 
     # Left Square
-    if (node[0]/100.0 > -4.75) and (node[0]/100.0 < -3.25) and (node[1]/100.0 < 0.75) and (node[1]/100.0 > -0.75):
+    if (node[0]/100.0 > -(4.75+clearance/100)) and (node[0]/100.0 < -3.25+clearance/100) and \
+    			(node[1]/100.0 < 0.75+clearance/100) and (node[1]/100.0 > -(0.75 + clearance/100)):
         # print('6')
         return False
 
     # Left Top Square
-    if (node[0]/100.0 > -2.75) and (node[0]/100.0 < -1.25) and (node[1]/100.0 < 3.75) and (node[1]/100.0 > 2.25):
+    if (node[0]/100.0 > -(2.75 + clearance/100)) and (node[0]/100.0 < -1.25 + clearance/100) \
+    and (node[1]/100.0 < 3.75 + clearance/100) and (node[1]/100.0 > 2.25 - clearance/100):
         # print('7')
         return False
 
     # Right square
-    if (node[0]/100.0 < 4.75) and (node[0]/100.0 > 3.25) and (node[1]/100.0 < 0.75) and (node[1]/100.0 > -0.75):
+    if (node[0]/100.0 < 4.75 + clearance/100) and (node[0]/100.0 > 3.25 - clearance/100) \
+    	and (node[1]/100.0 < 0.75 + clearance/100) and (node[1]/100.0 > -(0.75 + clearance/100)):
         # print('8')
         return False
 
@@ -294,11 +300,11 @@ def calc_cost(current, goal, step):
 
 def main():
     # Taking start point and goal point from the user
-    radius = 1
+    radius = 0.1*100
     step_size = 1
-    clearance = 1
-    start_point = [0,150,0]
-    while not check_node([0,150,0], radius + clearance):
+    clearance = 0.1*100
+    start_point = [-400,-300,0]
+    while not check_node(start_point, radius + clearance):
         print('Invalid start point given')
         exit(-1)
         # start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
@@ -306,8 +312,8 @@ def main():
     print('The start point you gave is:', start_point)
     print('')
     
-    goal_point = [400,500]
-    while not check_node([400,500], radius + clearance):
+    goal_point = [0,-300]
+    while not check_node(goal_point, radius + clearance):
         print('Invalid end point given')
         exit(-1)
     #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
@@ -316,7 +322,7 @@ def main():
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    goal = start.astar(goal_point, step_size, 1, 5)
+    goal = start.astar(goal_point, step_size, 1, 2)
     if not goal:
         print('Path not found')
         exit(-1)
@@ -345,6 +351,10 @@ def main():
     index = np.mgrid[0:1021, 0:1021]
 
     # Left Bottom Circle
+    grid[:, 0:10] = [0,0,0]
+    grid[:, -10:] = [0,0,0]
+    grid[0:10, :] = [0,0,0]
+    grid[-10:, :] = [0,0,0]
     result_left_bottom = (index[0] - (-300+510))**2 + (index[1] - (-200+510))**2
     inds = np.where(result_left_bottom < 10000.0)
     grid[inds] = [0,0,0]
