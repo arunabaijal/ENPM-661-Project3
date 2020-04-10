@@ -46,29 +46,28 @@ import numpy as np
 def talker():
     pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    
+    rate = rospy.Rate(10)  # 1hz
     new_location = Twist()
     f = open("/home/aruna/catkin_ws/src/project3/scripts/nodePath.txt", "r+")
     lines = f.readlines()
     linesread = [line.rstrip() for line in lines]
     for loc in linesread:
-        rate = rospy.Rate(10)  # 10hz
         if len(loc.split(',')) < 6:
             continue
-        new_location.linear.x = 0  # np.sqrt(float(loc.split(',')[3]) ** 2 + float(loc.split(',')[4]) ** 2)
-        # new_location.linear.y = -float(loc.split(',')[4])
-        new_location.angular.z = 3.14  # np.deg2rad(float(loc.split(',')[5]) * 100)
-        # print("----------------")
-        # print(new_location)
-        t0 = rospy.Time.now().to_sec()
-        while not rospy.is_shutdown():
-            t1 = rospy.Time.now().to_sec()
-            print(t1 - t0)
-            if t1 - t0 >= 10:
-                break
-            # hello_str = loc
-            # print(new_location)
-            # rospy.loginfo(new_location)
+    # float(lines.split(',')[3] = dx/dt  float(lines.split(',')[4]) = dy/dt  np.deg2rad(float(lines.split(',')[5]) * 100) = dx
+        new_location.linear.x = np.sqrt(float(loc.split(',')[3]) ** 2 + float(loc.split(',')[4]) ** 2)/100
+        new_location.angular.z = np.deg2rad(float(loc.split(',')[5]) * 100)/100
+        for i in range(1000):
+            # new_location.angular.z = 0.314
+            # t0 = rospy.Time.now().to_sec()
+            # while not rospy.is_shutdown():
+            #     t1 = rospy.Time.now().to_sec()
+            #     print(t1 - t0)
+            #     if t1 - t0 >= 9:
+            #         break
+                # hello_str = loc
+                # print(new_location)
+            rospy.loginfo(new_location)
             pub.publish(new_location)
             rate.sleep()
 
