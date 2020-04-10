@@ -9,7 +9,7 @@ import cv2
 class Node():
     r = 38*100/1000
     L = 354*100/1000
-    dt = 1
+    # dt = 0.1
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
         self.cost2come = cost2come
@@ -36,15 +36,30 @@ class Node():
         return steps_with_cost
     
     def do_action(self, LW, RW):
-        LW = LW*2*np.pi/60
-        RW = RW*2*np.pi/60
-        dx=(Node.r/2)*(LW+RW)*math.cos(np.deg2rad(self.theta))*Node.dt
-        dy=(Node.r/2)*(LW+RW)*math.sin(np.deg2rad(self.theta))*Node.dt
-        dtheta=(Node.r/Node.L)*(RW-LW)*Node.dt
-        step = np.sqrt(dx**2 + dy**2)
-        # print('dx: ', dx, ' dy: ', dy, ' dtheta: ', dtheta)
-        return self.x + dx, self.y + dy, self.theta + np.rad2deg(dtheta), step
-    
+        LW = LW * 2 * np.pi / 60
+        RW = RW * 2 * np.pi / 60
+        dt = 0.1
+        t = 0
+        theta = np.rad2deg(self.theta)
+        accum_dx = 0
+        accum_dy = 0
+        step = 0
+        while t < 1:
+            t += dt
+            dx = (Node.r / 2) * (LW + RW) * math.cos(theta) * dt
+            dy = (Node.r / 2) * (LW + RW) * math.sin(theta) * dt
+            accum_dx += dx
+            accum_dy += dy
+            dtheta = (Node.r / Node.L) * (RW - LW) * dt
+            theta += np.rad2deg(dtheta)
+            step += np.sqrt(dx ** 2 + dy ** 2)
+            node = [self.x + accum_dx, self.y + accum_dy]
+            if not check_node(node, self.clear_val):
+                break
+        self.theta = np.deg2rad(theta)
+        print('dx: ', accum_dx, ' dy: ', accum_dy, ' dtheta: ', theta)
+        return self.x + accum_dx, self.y + accum_dy, self.theta, step
+
     def findRegion(self, current):
         region = [current[0], current[1], (current[2] + 360) % 360]
         return region
@@ -63,7 +78,6 @@ class Node():
         steps_with_cost = self.possible_steps(rpm1, rpm2)
         while not toBeVisited.empty():
             visitingNode = toBeVisited.get()
-            print(visitingNode.current)
             node = visitingNode.current
             region = self.findRegion(node)  # creating unique indexing value
             key = (int(region[0]), int(region[1]), int(region[2]))
@@ -228,21 +242,23 @@ def main():
     step_size = 1
     clearance = clearance*100
     start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
-    start_point = [-start_point[0]*100, -start_point[1]*100, start_point[2]]
+    start_point = [start_point[0]*100, start_point[1]*100, start_point[2]]
     while not check_node(start_point, radius + clearance):
         print('Invalid start point given')
         start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
+        start_point = [start_point[0] * 100, start_point[1] * 100, start_point[2]]
     #
     # print('The start point you gave is:', start_point)
     # print('')
 
     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-    goal_point = [-goal_point[0]*100, -goal_point[1]*100]
+    goal_point = [goal_point[0]*100, goal_point[1]*100]
     while not check_node(goal_point, radius + clearance):
         print('Invalid end point given')
         goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-    rpm1 = eval(input('Please enter value of RPM1'))
-    rpm2 = eval(input('Please enter value of RPM2'))
+        goal_point = [goal_point[0] * 100, goal_point[1] * 100]
+    rpm1 = eval(input('Please enter value of RPM1: '))
+    rpm2 = eval(input('Please enter value of RPM2: '))
     # print('The goal point you gave is:', goal_point)
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
@@ -309,7 +325,6 @@ def main():
         pts = point.split(',')
         grid[int(float(pts[1]))+510][int(float(pts[0]))+510] = [255, 0, 0]
         if i % 10 == 0:
-            print('Frame number: ', str(i))
             vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
     points = file.readlines()
