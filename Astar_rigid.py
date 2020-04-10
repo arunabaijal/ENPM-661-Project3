@@ -42,7 +42,7 @@ class Node():
         dy=(Node.r/2)*(LW+RW)*math.sin(np.deg2rad(self.theta))*Node.dt
         dtheta=(Node.r/Node.L)*(RW-LW)*Node.dt
         step = np.sqrt(dx**2 + dy**2)
-        # print('dy', dy)
+        # print('dx: ', dx, ' dy: ', dy, ' dtheta: ', dtheta)
         return self.x + dx, self.y + dy, self.theta + np.rad2deg(dtheta), step
     
     def findRegion(self, current):
@@ -330,7 +330,7 @@ def main():
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    goal = start.astar(goal_point, step_size, 10, 15)
+    goal = start.astar(goal_point, step_size, 40, 50)
     if not goal:
         print('Path not found')
         exit(-1)
