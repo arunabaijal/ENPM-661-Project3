@@ -48,7 +48,7 @@ def talker():
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10)  # 1hz
     new_location = Twist()
-    f = open("/home/aruna/catkin_ws/src/project3/scripts/nodePath.txt", "r+")
+    f = open("nodePath.txt", "r+")
     lines = f.readlines()
     linesread = [line.rstrip() for line in lines]
     for loc in linesread:

@@ -222,29 +222,32 @@ def calc_cost(current, goal, step):
 
 def main():
     # Taking start point and goal point from the user
+    clearance = eval(input('Please enter robot clearance value: '))
+    # start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
     radius = 35.4/2
     step_size = 1
-    clearance = 0.2*100
-    start_point = [-400,-300,0]
+    clearance = clearance*100
+    start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
+    start_point = [-start_point[0]*100, -start_point[1]*100, start_point[2]]
     while not check_node(start_point, radius + clearance):
         print('Invalid start point given')
-        exit(-1)
-        # start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
-    
-    print('The start point you gave is:', start_point)
-    print('')
-    
-    goal_point = [0,-300]
+        start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
+    #
+    # print('The start point you gave is:', start_point)
+    # print('')
+
+    goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
+    goal_point = [-goal_point[0]*100, -goal_point[1]*100]
     while not check_node(goal_point, radius + clearance):
         print('Invalid end point given')
-        exit(-1)
-    #     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-    
-    print('The goal point you gave is:', goal_point)
+        goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
+    rpm1 = eval(input('Please enter value of RPM1'))
+    rpm2 = eval(input('Please enter value of RPM2'))
+    # print('The goal point you gave is:', goal_point)
     start_time = time.time()
     start = Node(None, 0, calc_cost(start_point, goal_point, step_size), radius + clearance, start_point[0], start_point[1], start_point[2])
     print('Finding path...')
-    goal = start.astar(goal_point, step_size, 40, 50)
+    goal = start.astar(goal_point, step_size, rpm1, rpm2)
     if not goal:
         print('Path not found')
         exit(-1)
@@ -295,20 +298,6 @@ def main():
     result_top = (index[1] - (200+510))**2 + (index[0] - (300+510))**2
     inds = np.where(result_top < 10000.0)
     grid[inds] = [0,0,0]
-
-    # circle = []
-    # for i in range(200, 250):
-    #     for j in range(125, 175):
-    #         if (i - 225) ** 2 + (j - 150) ** 2 <= 25 ** 2:
-    #             circle.append([i, j])
-    # lines.append(circle)
-    
-    # ellipse = []
-    # for i in range(110, 190):
-    #     for j in range(80, 120):
-    #         if (i - 150) ** 2 / 40 ** 2 + (j - 100) ** 2 / 20 ** 2 <= 1:
-    #             ellipse.append([i, j])
-    # lines.append(ellipse)
     
     vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (1021, 1021))
     for line in lines:
