@@ -22,7 +22,7 @@ class Node():
         self.kids = []
         
     def __lt__(self, other):
-        return (0.6*self.cost2go + 0.4*self.cost2come) < (0.6*other.cost2go + 0.4*other.cost2come)
+        return (self.cost2go + self.cost2come) < (other.cost2go + other.cost2come)
 
     # def __eq__(self, other):
 
@@ -62,10 +62,10 @@ class Node():
             step += np.sqrt(dx ** 2 + dy ** 2)
             self.kids.extend(node)
 
-        print("accum_dx: {}, acum_dy: {}".format(accum_dx, accum_dy))
-        self.theta = np.rad2deg(theta)
+        # print("accum_dx: {}, acum_dy: {}".format(accum_dx, accum_dy))
+        # self.theta = np.rad2deg(theta)
 
-        return self.x + accum_dx, self.y + accum_dy, self.theta, step
+        return self.x + accum_dx, self.y + accum_dy, np.rad2deg(theta), step
 
     def findRegion(self, current):
         region = [current[0], current[1], (current[2] + 360) % 360]
@@ -363,30 +363,15 @@ def main():
     file = open('nodePath.txt', 'r')
     file1 = open('kidPath.txt', 'r')
     points = file.readlines()
-    kids = file1.readlines()
-    pr_point = start_point
-    i = 0
+    # kids = file1.readlines()
+    # pr_point = start_point
+    # i = 0
     for point in points:
         pts = point.split(',')
-        kidpts = kids[i].split(',')
-        length = int(len(kidpts)/2)
-        # grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 510, int(float(pr_point[1])) + 510),
-        #                        (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
-
-        j = 0
         grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 510, int(float(pr_point[1])) + 510),
-                               (int(float(kidpts[2*j])) + 510, int(float(kidpts[2*j + 1])) + 510), (0, 255, 0), 1)
-
-        while j < length - 1:
-            grid = cv2.arrowedLine(grid, (int(float(kidpts[2*j])) + 510, int(float(kidpts[2*j + 1])) + 510),
-                                   (int(float(kidpts[2*(j+1)])) + 510, int(float(kidpts[2*(j+1) + 1])) + 510), (0, 255, 0), 1)
-            j += 1
-
-        grid = cv2.arrowedLine(grid, (int(float(kidpts[2*j])) + 510, int(float(kidpts[2*j + 1])) + 510),
-                                   (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
+                               (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
         pr_point = pts
         vidWriter.write(np.flip(grid, 0))
-        i += 1
     for i in range(2000):
         vidWriter.write(np.flip(grid, 0))
     vidWriter.release()
