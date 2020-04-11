@@ -9,7 +9,8 @@ class Node():
     r = 38*10/1000  # TODO:scale
     L = 354*10/1000  # TODO:scale
     # dt = 0.1
-    curve_list = []
+    curve_list_start = []
+    curve_list_end = []
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
         self.cost2come = cost2come
@@ -114,11 +115,11 @@ class Node():
                             if accepted[new_keys].cost2come + accepted[new_keys].cost2go > new_node.cost2come + new_node.cost2go:
                                 accepted[new_keys] = new_node
                                 toBeVisited.put(new_node)
-                                Node.curve_list = plot_curve(visitingNode.x, visitingNode.y, visitingNode.theta, i[0], i[1], visitingNode.clear_val, Node.curve_list)
+                                Node.curve_list_start, Node.curve_list_end = plot_curve(visitingNode.x, visitingNode.y, visitingNode.theta, i[0], i[1], visitingNode.clear_val, Node.curve_list_start, Node.curve_list_end)
                         else:
                             accepted[new_keys] = new_node
                             toBeVisited.put(new_node)
-                            Node.curve_list = plot_curve(visitingNode.x, visitingNode.y, visitingNode.theta, i[0], i[1], visitingNode.clear_val, Node.curve_list)
+                            Node.curve_list_start, Node.curve_list_end = plot_curve(visitingNode.x, visitingNode.y, visitingNode.theta, i[0], i[1], visitingNode.clear_val, Node.curve_list_start, Node.curve_list_end)
                 visited[(int(region[0]), int(region[1]), int(region[2]))] = visitingNode
                 # if j > 50:
                 #     exit(-1)
@@ -132,7 +133,7 @@ def goalReached(node, goal):
         return True
     return False
 
-def plot_curve(Xi,Yi,Thetai,UL,UR, clear_val, curve_list):
+def plot_curve(Xi,Yi,Thetai,UL,UR, clear_val, curve_list_start, curve_list_end):
     UL = UL * 2 * np.pi / 60
     UR = UR * 2 * np.pi / 60
     t = 0
@@ -153,10 +154,11 @@ def plot_curve(Xi,Yi,Thetai,UL,UR, clear_val, curve_list):
         Yn += 0.5*r * (UL + UR) * math.sin(Thetan) * dt
         Thetan += (r / L) * (UR - UL) * dt
         if check_node([Xn, Yn], clear_val):
-            curve_list.append([Xn, Yn])
+            curve_list_start.append([Xs, Ys])
+            curve_list_end.append([Xn, Yn])
         # plt.plot([Xs, Xn], [Ys, Yn], color="blue")
     Thetan = 180 * (Thetan) / 3.14
-    return curve_list
+    return curve_list_start, curve_list_end
 def check_node(node, clearance):
     # TODO:scale
 
@@ -359,17 +361,23 @@ def main():
     inds = np.where(result_top < 100.0)  # TODO:scale
     grid[inds] = [0,0,0]
     
-    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (103, 103))
+    # vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (103, 103))
     for line in lines:
         for l in line:
             grid[l[1]][l[0]] = [0, 0, 0]
     # file = open('Nodes.txt', 'r')
     # points = file.readlines()
-    for i, pts in enumerate(Node.curve_list):
+    pr_point = start_point
+    for i in range(len(Node.curve_list_start)):
         # pts = point.split(',')
-        grid[int(float(pts[1]))+51][int(float(pts[0]))+51] = [255, 0, 0]  # TODO:scale
-        if i % 10 == 0:
-            vidWriter.write(np.flip(grid, 0))
+        grid = cv2.line(grid, (int(float(Node.curve_list_start[i][0])) + 51, int(float(Node.curve_list_start[i][1])) + 51),  # TODO:scale
+                               (int(float(Node.curve_list_end[i][0])) + 51, int(float(Node.curve_list_end[i][1])) + 51), (255, 0, 0), 1)  # TODO:scale
+        # pr_point = pts
+        # grid[int(float(pts[1]))+51][int(float(pts[0]))+51] = [255, 0, 0]  # TODO:scale
+        # if i % 10 == 0:
+        cv2.imshow('result', grid)
+        cv2.waitKey(1)
+        # vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
     # file1 = open('kidPath.txt', 'r')
     points = file.readlines()
@@ -381,10 +389,12 @@ def main():
         grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 51, int(float(pr_point[1])) + 51),  # TODO:scale
                                (int(float(pts[0])) + 51, int(float(pts[1])) + 51), (0, 255, 0), 1)  # TODO:scale
         pr_point = pts
-        vidWriter.write(np.flip(grid, 0))
-    for i in range(2000):
-        vidWriter.write(np.flip(grid, 0))
-    vidWriter.release()
+        cv2.imshow('result', grid)
+        cv2.waitKey(1)
+        # vidWriter.write(np.flip(grid, 0))
+    # for i in range(2000):
+        # vidWriter.write(np.flip(grid, 0))
+    # vidWriter.release()
     graph_end_time = time.time()
     print('Time taken to animate paths: ' + str(graph_end_time - end_time))
 
