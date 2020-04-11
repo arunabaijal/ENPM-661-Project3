@@ -219,7 +219,7 @@ def generate_path(node, root):
         dy = (node.y - node.parent.y)/(dt*10)  # TODO:scale
         dtheta = (node.theta - node.parent.theta)/(dt*10)  # TODO:scale
         toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
-        # node = node.parent
+        node = node.parent
         f.write(toWrite + '\n' + content)
         f.close()
     
