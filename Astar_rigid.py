@@ -6,8 +6,8 @@ import time
 import cv2
 
 class Node():
-    r = 38*100/1000
-    L = 354*100/1000
+    r = 38*10/1000  # TODO:scale
+    L = 354*10/1000  # TODO:scale
     # dt = 0.1
     curve_list = []
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
@@ -158,51 +158,51 @@ def plot_curve(Xi,Yi,Thetai,UL,UR, clear_val, curve_list):
     Thetan = 180 * (Thetan) / 3.14
     return curve_list
 def check_node(node, clearance):
-    
+    # TODO:scale
 
-    if (node[0]/100.0 < -5.0+clearance/100) or (node[0]/100.0 > (5.0-clearance/100)) or \
-    					(node[1]/100.0 < -5.0+clearance/100) or (node[1]/100.0 > 5.0-clearance/100):
+    if (node[0]/10.0 < -5.0+clearance/10) or (node[0]/10.0 > (5.0-clearance/10)) or \
+    					(node[1]/10.0 < -5.0+clearance/10) or (node[1]/10.0 > 5.0-clearance/10):
         # print('1')
         return False
 
-    circle_bottom_left = (node[0]/100.0 - (-2.0))**2 + (node[1]/100.0 - (-3.0))**2
-    if  circle_bottom_left < ((1+clearance/100)**2):
+    circle_bottom_left = (node[0]/10.0 - (-2.0))**2 + (node[1]/10.0 - (-3.0))**2
+    if  circle_bottom_left < ((1+clearance/10)**2):
         # print(((1+clearance/100)**2))
         # print('2')
         return False
 
-    circle_bottom_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (-3.0))**2
-    if  circle_bottom_right < ((1+clearance/100)**2):
+    circle_bottom_right = (node[0]/10.0 - (2.0))**2 + (node[1]/10.0 - (-3.0))**2
+    if  circle_bottom_right < ((1+clearance/10)**2):
         # print(((1+clearance/100)**2))
         # print('3')
         return False
 
-    circle_top_right = (node[0]/100.0 - (2.0))**2 + (node[1]/100.0 - (3.0))**2
-    if circle_top_right < ((1+clearance/100)**2):
+    circle_top_right = (node[0]/10.0 - (2.0))**2 + (node[1]/10.0 - (3.0))**2
+    if circle_top_right < ((1+clearance/10)**2):
         # print('4')
         return False
 
-    circle_center = (node[0]/100.0 - (0.0))**2 + (node[1]/100.0 - (0.0))**2
-    if circle_center < ((1+clearance/100)**2):
+    circle_center = (node[0]/10.0 - (0.0))**2 + (node[1]/10.0 - (0.0))**2
+    if circle_center < ((1+clearance/10)**2):
         # print(circle_center, node)
         # print('5')
         return False
 
     # Left Square
-    if (node[0]/100.0 > -(4.75+clearance/100)) and (node[0]/100.0 < -3.25+clearance/100) and \
-    			(node[1]/100.0 < 0.75+clearance/100) and (node[1]/100.0 > -(0.75 + clearance/100)):
+    if (node[0]/10.0 > -(4.75+clearance/10)) and (node[0]/10.0 < -3.25+clearance/10) and \
+    			(node[1]/10.0 < 0.75+clearance/10) and (node[1]/10.0 > -(0.75 + clearance/10)):
         # print('6')
         return False
 
     # Left Top Square
-    if (node[0]/100.0 > -(2.75 + clearance/100)) and (node[0]/100.0 < -1.25 + clearance/100) \
-    and (node[1]/100.0 < 3.75 + clearance/100) and (node[1]/100.0 > 2.25 - clearance/100):
+    if (node[0]/10.0 > -(2.75 + clearance/10)) and (node[0]/10.0 < -1.25 + clearance/10) \
+    and (node[1]/10.0 < 3.75 + clearance/10) and (node[1]/10.0 > 2.25 - clearance/10):
         # print('7')
         return False
 
     # Right square
-    if (node[0]/100.0 < 4.75 + clearance/100) and (node[0]/100.0 > 3.25 - clearance/100) \
-    	and (node[1]/100.0 < 0.75 + clearance/100) and (node[1]/100.0 > -(0.75 + clearance/100)):
+    if (node[0]/10.0 < 4.75 + clearance/10) and (node[0]/10.0 > 3.25 - clearance/10) \
+    	and (node[1]/10.0 < 0.75 + clearance/10) and (node[1]/10.0 > -(0.75 + clearance/10)):
         # print('8')
         return False
 
@@ -215,9 +215,9 @@ def generate_path(node, root):
         f = open("nodePath.txt", "r+")
         content = f.read()
         f.seek(0, 0)
-        dx = (node.x - node.parent.x)/(dt*100)
-        dy = (node.y - node.parent.y)/(dt*100)
-        dtheta = (node.theta - node.parent.theta)/(dt*100)
+        dx = (node.x - node.parent.x)/(dt*10)  # TODO:scale
+        dy = (node.y - node.parent.y)/(dt*10)  # TODO:scale
+        dtheta = (node.theta - node.parent.theta)/(dt*10)  # TODO:scale
         toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
         # node = node.parent
         f.write(toWrite + '\n' + content)
@@ -236,10 +236,10 @@ def generate_path(node, root):
 # Function to generate points on a line
 def get_line(x1, y1, x2, y2):
     points = []
-    x1 = int(100*(x1 + 5.1))
-    y1 = int(100*(y1 + 5.1))
-    x2 = int(100*(x2 + 5.1))
-    y2 = int(100*(y2 + 5.1))
+    x1 = int(10*(x1 + 5.1))  # TODO:scale
+    y1 = int(10*(y1 + 5.1))  # TODO:scale
+    x2 = int(10*(x2 + 5.1))  # TODO:scale
+    y2 = int(10*(y2 + 5.1))  # TODO:scale
     issteep = abs(y2 - y1) > abs(x2 - x1)
     if issteep:
         x1, y1 = y1, x1
@@ -281,25 +281,25 @@ def main():
     # Taking start point and goal point from the user
     clearance = eval(input('Please enter robot clearance value: '))
     # start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
-    radius = 35.4/2
+    radius = 3.54/2  # TODO:scale
     step_size = 1
-    clearance = clearance*100
+    clearance = clearance*10  # TODO:scale
     start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
-    start_point = [start_point[0]*100, start_point[1]*100, start_point[2]]
+    start_point = [start_point[0]*10, start_point[1]*10, start_point[2]]  # TODO:scale
     while not check_node(start_point, radius + clearance):
         print('Invalid start point given')
         start_point = eval(input('Please enter the start point in this format - [x,y,theta (in deg)]: '))
-        start_point = [start_point[0] * 100, start_point[1] * 100, start_point[2]]
+        start_point = [start_point[0] * 10, start_point[1] * 10, start_point[2]]  # TODO:scale
     #
     # print('The start point you gave is:', start_point)
     # print('')
 
     goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-    goal_point = [goal_point[0]*100, goal_point[1]*100]
+    goal_point = [goal_point[0]*10, goal_point[1]*10]  # TODO:scale
     while not check_node(goal_point, radius + clearance):
         print('Invalid end point given')
         goal_point = eval(input('Please enter the goal point in this format - [x,y]: '))
-        goal_point = [goal_point[0] * 100, goal_point[1] * 100]
+        goal_point = [goal_point[0] * 10, goal_point[1] * 10]  # TODO:scale
     rpm1 = eval(input('Please enter value of RPM1: '))
     rpm2 = eval(input('Please enter value of RPM2: '))
     # print('The goal point you gave is:', goal_point)
@@ -314,7 +314,7 @@ def main():
     generate_path(goal, start_point)
     end_time = time.time()
     print('Time taken to find path: ' + str(end_time - start_time))
-    grid = np.ones((1021, 1021, 3), dtype=np.uint8) * 255
+    grid = np.ones((103, 103, 3), dtype=np.uint8) * 255  # TODO:scale
     lines = []
     # Left Square
     lines.append(get_line(-4.75, 0.75, -3.25, 0.75))
@@ -332,33 +332,34 @@ def main():
     lines.append(get_line(4.75, -0.75, 3.25, -0.75))
     lines.append(get_line(3.25, -0.75, 3.25, 0.75))
     
-    index = np.mgrid[0:1021, 0:1021]
+    index = np.mgrid[0:103, 0:103]  # TODO:scale
 
+    # Border
+    grid[:, 0:1] = [0,0,0]  # TODO:scale
+    grid[:, -1:] = [0,0,0]  # TODO:scale
+    grid[0:1, :] = [0,0,0]  # TODO:scale
+    grid[-1:, :] = [0,0,0]  # TODO:scale
     # Left Bottom Circle
-    grid[:, 0:10] = [0,0,0]
-    grid[:, -10:] = [0,0,0]
-    grid[0:10, :] = [0,0,0]
-    grid[-10:, :] = [0,0,0]
-    result_left_bottom = (index[0] - (-300+510))**2 + (index[1] - (-200+510))**2
-    inds = np.where(result_left_bottom < 10000.0)
+    result_left_bottom = (index[0] - (-30+51))**2 + (index[1] - (-20+51))**2  # TODO:scale
+    inds = np.where(result_left_bottom < 100.0)  # TODO:scale
     grid[inds] = [0,0,0]
 
     # Right Bottom Circle
-    result_right_bottom = (index[1] - (200+510))**2 + (index[0] - (-300+510))**2
-    inds = np.where(result_right_bottom < 10000.0)
+    result_right_bottom = (index[1] - (20+51))**2 + (index[0] - (-30+51))**2  # TODO:scale
+    inds = np.where(result_right_bottom < 100.0)  # TODO:scale
     grid[inds] = [0,0,0]
 
     # Center
-    result_center = (index[1] - (0+510))**2 + (index[0] - (0+510))**2
-    inds = np.where(result_center < 10000.0)
+    result_center = (index[1] - (0+51))**2 + (index[0] - (0+51))**2  # TODO:scale
+    inds = np.where(result_center < 100.0)  # TODO:scale
     grid[inds] = [0,0,0]
 
     # Right Top Circle
-    result_top = (index[1] - (200+510))**2 + (index[0] - (300+510))**2
-    inds = np.where(result_top < 10000.0)
+    result_top = (index[1] - (20+51))**2 + (index[0] - (30+51))**2  # TODO:scale
+    inds = np.where(result_top < 100.0)  # TODO:scale
     grid[inds] = [0,0,0]
     
-    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (1021, 1021))
+    vidWriter = cv2.VideoWriter("./video_output.mp4",cv2.VideoWriter_fourcc(*'mp4v'), 500, (103, 103))
     for line in lines:
         for l in line:
             grid[l[1]][l[0]] = [0, 0, 0]
@@ -366,7 +367,7 @@ def main():
     # points = file.readlines()
     for i, pts in enumerate(Node.curve_list):
         # pts = point.split(',')
-        grid[int(float(pts[1]))+510][int(float(pts[0]))+510] = [255, 0, 0]
+        grid[int(float(pts[1]))+51][int(float(pts[0]))+51] = [255, 0, 0]  # TODO:scale
         if i % 10 == 0:
             vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
@@ -377,8 +378,8 @@ def main():
     # i = 0
     for point in points:
         pts = point.split(',')
-        grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 510, int(float(pr_point[1])) + 510),
-                               (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
+        grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 51, int(float(pr_point[1])) + 51),  # TODO:scale
+                               (int(float(pts[0])) + 51, int(float(pts[1])) + 51), (0, 255, 0), 1)  # TODO:scale
         pr_point = pts
         vidWriter.write(np.flip(grid, 0))
     for i in range(2000):
