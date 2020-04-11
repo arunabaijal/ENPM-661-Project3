@@ -19,9 +19,13 @@ class Node():
         self.y = y
         self.theta = theta
         self.current = [self.x, self.y, self.theta]
+        self.kids = []
         
     def __lt__(self, other):
-        return (self.cost2go + self.cost2come) < (other.cost2go + other.cost2come)
+        return (0.6*self.cost2go + 0.4*self.cost2come) < (0.6*other.cost2go + 0.4*other.cost2come)
+
+    # def __eq__(self, other):
+
 
     def possible_steps(self, rpm1, rpm2):
         steps_with_cost = np.array([
@@ -40,7 +44,7 @@ class Node():
         RW = RW * 2 * np.pi / 60
         dt = 0.1
         t = 0
-        theta = np.rad2deg(self.theta)
+        theta = np.deg2rad(self.theta)
         accum_dx = 0
         accum_dy = 0
         step = 0
@@ -51,13 +55,16 @@ class Node():
             accum_dx += dx
             accum_dy += dy
             dtheta = (Node.r / Node.L) * (RW - LW) * dt
-            theta += np.rad2deg(dtheta)
-            step += np.sqrt(dx ** 2 + dy ** 2)
+            theta += dtheta
             node = [self.x + accum_dx, self.y + accum_dy]
             if not check_node(node, self.clear_val):
                 break
-        self.theta = np.deg2rad(theta)
-        print('dx: ', accum_dx, ' dy: ', accum_dy, ' dtheta: ', theta)
+            step += np.sqrt(dx ** 2 + dy ** 2)
+            self.kids.extend(node)
+
+        print("accum_dx: {}, acum_dy: {}".format(accum_dx, accum_dy))
+        self.theta = np.rad2deg(theta)
+
         return self.x + accum_dx, self.y + accum_dy, self.theta, step
 
     def findRegion(self, current):
@@ -76,9 +83,12 @@ class Node():
         accepted[(int(region[0]), int(region[1]), int(region[2]))] = self
         f = open("Nodes.txt", "a+")
         steps_with_cost = self.possible_steps(rpm1, rpm2)
+        j = 0
         while not toBeVisited.empty():
             visitingNode = toBeVisited.get()
             node = visitingNode.current
+            # print('------------------------------------')
+            # print(toBeVisited.qsize(), visitingNode.cost2come + visitingNode.cost2go)
             region = self.findRegion(node)  # creating unique indexing value
             key = (int(region[0]), int(region[1]), int(region[2]))
             if key in visited.keys():  # check if node already visited
@@ -92,6 +102,8 @@ class Node():
                 
                 for i in steps_with_cost:
                     new_x, new_y, new_theta, new_step = visitingNode.do_action(i[0], i[1])
+                    # print(i[0], i[1], visitingNode.cost2come + new_step, calc_cost([new_x, new_y], goal,new_step), \
+                    #                     visitingNode.cost2come + new_step + calc_cost([new_x, new_y], goal,new_step))
                     # print(new_x, new_y, new_theta)
                     new_region = self.findRegion([new_x, new_y, new_theta])
                     # print(new_region)
@@ -106,6 +118,9 @@ class Node():
                             accepted[new_keys] = new_node
                             toBeVisited.put(new_node)
                 visited[(int(region[0]), int(region[1]), int(region[2]))] = visitingNode
+                # if j > 50:
+                #     exit(-1)
+                # j += 1
         f.close()
         return False
 
@@ -169,16 +184,27 @@ def check_node(node, clearance):
 # Function to find selected optimal path
 def generate_path(node, root):
     while (not np.array_equal(node.current, root)):
+        dt = 1
         f = open("nodePath.txt", "r+")
         content = f.read()
         f.seek(0, 0)
-        dx = (node.x - node.parent.x)/(Node.dt*100)
-        dy = (node.y - node.parent.y)/(Node.dt*100)
-        dtheta = (node.theta - node.parent.theta)/(Node.dt*100)
+        dx = (node.x - node.parent.x)/(dt*100)
+        dy = (node.y - node.parent.y)/(dt*100)
+        dtheta = (node.theta - node.parent.theta)/(dt*100)
         toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
-        node = node.parent
+        # node = node.parent
         f.write(toWrite + '\n' + content)
         f.close()
+
+        f_1 = open("kidPath.txt", "r+")
+        content = f_1.read()
+        f_1.seek(0, 0)
+        toWrite = str(node.kids)[1:-1]
+        node = node.parent
+        f_1.write(toWrite + '\n' + content)
+        f_1.close()
+
+
     
     f = open("nodePath.txt", "r+")
     content = f.read()
@@ -189,6 +215,13 @@ def generate_path(node, root):
     toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
     f.write(toWrite + '\n' + content)
     f.close()
+
+    f_1 = open("kidPath.txt", "r+")
+    content = f_1.read()
+    f_1.seek(0, 0)
+    toWrite = str(node.kids)[1:-1]
+    f_1.write(toWrite + '\n' + content)
+    f_1.close()
 
 # Function to generate points on a line
 def get_line(x1, y1, x2, y2):
@@ -268,6 +301,7 @@ def main():
         print('Path not found')
         exit(-1)
     open('nodePath.txt', 'w').close()
+    open('kidPath.txt', 'w').close()
     generate_path(goal, start_point)
     end_time = time.time()
     print('Time taken to find path: ' + str(end_time - start_time))
@@ -327,14 +361,32 @@ def main():
         if i % 10 == 0:
             vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
+    file1 = open('kidPath.txt', 'r')
     points = file.readlines()
+    kids = file1.readlines()
     pr_point = start_point
+    i = 0
     for point in points:
         pts = point.split(',')
+        kidpts = kids[i].split(',')
+        length = int(len(kidpts)/2)
+        # grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 510, int(float(pr_point[1])) + 510),
+        #                        (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
+
+        j = 0
         grid = cv2.arrowedLine(grid, (int(float(pr_point[0])) + 510, int(float(pr_point[1])) + 510),
-                               (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
+                               (int(float(kidpts[2*j])) + 510, int(float(kidpts[2*j + 1])) + 510), (0, 255, 0), 1)
+
+        while j < length - 1:
+            grid = cv2.arrowedLine(grid, (int(float(kidpts[2*j])) + 510, int(float(kidpts[2*j + 1])) + 510),
+                                   (int(float(kidpts[2*(j+1)])) + 510, int(float(kidpts[2*(j+1) + 1])) + 510), (0, 255, 0), 1)
+            j += 1
+
+        grid = cv2.arrowedLine(grid, (int(float(kidpts[2*j])) + 510, int(float(kidpts[2*j + 1])) + 510),
+                                   (int(float(pts[0])) + 510, int(float(pts[1])) + 510), (0, 255, 0), 1)
         pr_point = pts
         vidWriter.write(np.flip(grid, 0))
+        i += 1
     for i in range(2000):
         vidWriter.write(np.flip(grid, 0))
     vidWriter.release()
