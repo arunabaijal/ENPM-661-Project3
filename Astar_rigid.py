@@ -5,11 +5,11 @@ import math
 import time
 import cv2
 
-
 class Node():
     r = 38*100/1000
     L = 354*100/1000
     # dt = 0.1
+    curve_list = []
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
         self.cost2come = cost2come
@@ -19,7 +19,7 @@ class Node():
         self.y = y
         self.theta = theta
         self.current = [self.x, self.y, self.theta]
-        self.kids = []
+        # self.kids = []
         
     def __lt__(self, other):
         return (self.cost2go + self.cost2come) < (other.cost2go + other.cost2come)
@@ -60,7 +60,7 @@ class Node():
             if not check_node(node, self.clear_val):
                 break
             step += np.sqrt(dx ** 2 + dy ** 2)
-            self.kids.extend(node)
+            # self.kids.extend(node)
 
         # print("accum_dx: {}, acum_dy: {}".format(accum_dx, accum_dy))
         # self.theta = np.rad2deg(theta)
@@ -72,7 +72,7 @@ class Node():
         return region
     
     def astar(self, goal, step_size, rpm1, rpm2):
-        open('Nodes.txt', 'w').close()  # clearing files
+        # open('Nodes.txt', 'w').close()  # clearing files
         # visited = np.zeros((600*100, 400*100, 360), dtype=np.uint8)
         # accepted = np.full((600*100, 400*100, 360), None, dtype=np.uint8)
         visited = {}
@@ -81,7 +81,7 @@ class Node():
         toBeVisited.put(self)
         region = self.findRegion(self.current)  # creating unique indexing value
         accepted[(int(region[0]), int(region[1]), int(region[2]))] = self
-        f = open("Nodes.txt", "a+")
+        # f = open("Nodes.txt", "a+")
         steps_with_cost = self.possible_steps(rpm1, rpm2)
         j = 0
         while not toBeVisited.empty():
@@ -94,10 +94,10 @@ class Node():
             if key in visited.keys():  # check if node already visited
                 continue
             else:
-                toWrite = str(node)
-                f.write(toWrite[1:len(toWrite) - 1] + '\n')
+                # toWrite = str(node)
+                # f.write(toWrite[1:len(toWrite) - 1] + '\n')
                 if goalReached(node, goal):  # check if goal found
-                    f.close()
+                    # f.close()
                     return visitingNode
                 
                 for i in steps_with_cost:
@@ -114,14 +114,16 @@ class Node():
                             if accepted[new_keys].cost2come + accepted[new_keys].cost2go > new_node.cost2come + new_node.cost2go:
                                 accepted[new_keys] = new_node
                                 toBeVisited.put(new_node)
+                                Node.curve_list = plot_curve(visitingNode.x, visitingNode.y, visitingNode.theta, i[0], i[1], visitingNode.clear_val, Node.curve_list)
                         else:
                             accepted[new_keys] = new_node
                             toBeVisited.put(new_node)
+                            Node.curve_list = plot_curve(visitingNode.x, visitingNode.y, visitingNode.theta, i[0], i[1], visitingNode.clear_val, Node.curve_list)
                 visited[(int(region[0]), int(region[1]), int(region[2]))] = visitingNode
                 # if j > 50:
                 #     exit(-1)
                 # j += 1
-        f.close()
+        # f.close()
         return False
 
 # Function to check if point is within goal threshold
@@ -130,6 +132,31 @@ def goalReached(node, goal):
         return True
     return False
 
+def plot_curve(Xi,Yi,Thetai,UL,UR, clear_val, curve_list):
+    UL = UL * 2 * np.pi / 60
+    UR = UR * 2 * np.pi / 60
+    t = 0
+    r = Node.r
+    L = Node.L
+    dt = 0.1
+    Xn=Xi
+    Yn=Yi
+    Thetan = 3.14 * Thetai / 180
+# Xi, Yi,Thetai: Input point's coordinates
+# Xs, Ys: Start point coordinates for plot function
+# Xn, Yn, Thetan: End point coordintes
+    while t<1:
+        t = t + dt
+        Xs = Xn
+        Ys = Yn
+        Xn += 0.5*r * (UL + UR) * math.cos(Thetan) * dt
+        Yn += 0.5*r * (UL + UR) * math.sin(Thetan) * dt
+        Thetan += (r / L) * (UR - UL) * dt
+        if check_node([Xn, Yn], clear_val):
+            curve_list.append([Xn, Yn])
+        # plt.plot([Xs, Xn], [Ys, Yn], color="blue")
+    Thetan = 180 * (Thetan) / 3.14
+    return curve_list
 def check_node(node, clearance):
     
 
@@ -195,16 +222,6 @@ def generate_path(node, root):
         # node = node.parent
         f.write(toWrite + '\n' + content)
         f.close()
-
-        f_1 = open("kidPath.txt", "r+")
-        content = f_1.read()
-        f_1.seek(0, 0)
-        toWrite = str(node.kids)[1:-1]
-        node = node.parent
-        f_1.write(toWrite + '\n' + content)
-        f_1.close()
-
-
     
     f = open("nodePath.txt", "r+")
     content = f.read()
@@ -215,13 +232,6 @@ def generate_path(node, root):
     toWrite = str(node.current)[1:-1] + ', ' + str(dx) + ', ' + str(dy) + ', ' + str(dtheta)
     f.write(toWrite + '\n' + content)
     f.close()
-
-    f_1 = open("kidPath.txt", "r+")
-    content = f_1.read()
-    f_1.seek(0, 0)
-    toWrite = str(node.kids)[1:-1]
-    f_1.write(toWrite + '\n' + content)
-    f_1.close()
 
 # Function to generate points on a line
 def get_line(x1, y1, x2, y2):
@@ -301,7 +311,6 @@ def main():
         print('Path not found')
         exit(-1)
     open('nodePath.txt', 'w').close()
-    open('kidPath.txt', 'w').close()
     generate_path(goal, start_point)
     end_time = time.time()
     print('Time taken to find path: ' + str(end_time - start_time))
@@ -353,18 +362,18 @@ def main():
     for line in lines:
         for l in line:
             grid[l[1]][l[0]] = [0, 0, 0]
-    file = open('Nodes.txt', 'r')
-    points = file.readlines()
-    for i, point in enumerate(points):
-        pts = point.split(',')
+    # file = open('Nodes.txt', 'r')
+    # points = file.readlines()
+    for i, pts in enumerate(Node.curve_list):
+        # pts = point.split(',')
         grid[int(float(pts[1]))+510][int(float(pts[0]))+510] = [255, 0, 0]
         if i % 10 == 0:
             vidWriter.write(np.flip(grid, 0))
     file = open('nodePath.txt', 'r')
-    file1 = open('kidPath.txt', 'r')
+    # file1 = open('kidPath.txt', 'r')
     points = file.readlines()
     # kids = file1.readlines()
-    # pr_point = start_point
+    pr_point = start_point
     # i = 0
     for point in points:
         pts = point.split(',')
