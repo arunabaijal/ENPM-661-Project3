@@ -3,24 +3,25 @@ import numpy as np
 import queue
 import math
 import time
+from decimal import *
 
-
+getcontext().prec = 18
 class Node():
     # Radius of wheels of turtlebot, divided by 1000 to convert to metres
-    r = 38 * 10 / 1000.0
+    r = Decimal(38 * 10 / 1000.0)
     # Radius / Distance between the wheels of the turtlebot, divided by 1000 to convert to metres
-    L = 354 * 10 / 1000.0
-    curve_list_start = []
-    curve_list_end = []
+    L = Decimal(354 * 10 / 1000.0)
+    # curve_list_start = []
+    # curve_list_end = []
     
     def __init__(self, parent, cost2come, cost2go, clear_val, x, y, theta):
         self.parent = parent
-        self.cost2come = cost2come
-        self.cost2go = cost2go
-        self.clear_val = clear_val
-        self.x = x
-        self.y = y
-        self.theta = theta
+        self.cost2come = Decimal(cost2come)
+        self.cost2go = Decimal(cost2go)
+        self.clear_val = Decimal(clear_val)
+        self.x = Decimal(x)
+        self.y = Decimal(y)
+        self.theta = Decimal(theta)
         self.current = [self.x, self.y, self.theta]
         # self.kids = []
     
@@ -41,28 +42,35 @@ class Node():
     
     # Functions for the action space - Up, Down, Left, Right, Up-Right, Down-Right, Up-left, Down-left
     def do_action(self, LW, RW):
-        LW = LW * 2 * np.pi / 60
-        RW = RW * 2 * np.pi / 60
-        dt = 0.1
-        t = 0
-        theta = np.deg2rad(self.theta)
-        accum_dx = 0
-        accum_dy = 0
-        step = 0
+        LW = Decimal(LW * 2 * np.pi / 60)
+        RW = Decimal(RW * 2 * np.pi / 60)
+        dt = Decimal(0.1)
+        t = Decimal(0)
+        theta = Decimal(np.deg2rad(float(self.theta)))
+        accum_dx = Decimal(0)
+        accum_dy = Decimal(0)
+        step = Decimal(0)
         # Loop to iterate 10 steps over 1sec time period
+        # print("THETA: {}".format(theta))
         while t < 1:
             t += dt
-            dx = (Node.r / 2) * (LW + RW) * math.cos(theta) * dt
-            dy = (Node.r / 2) * (LW + RW) * math.sin(theta) * dt
+            dx = Decimal((Node.r / 2) * (LW + RW) * (Decimal(math.cos(theta))) * dt)
+            dy = Decimal((Node.r / 2) * (LW + RW) * (Decimal(math.sin(theta))) * dt)
             accum_dx += dx
             accum_dy += dy
-            dtheta = (Node.r / Node.L) * (RW - LW) * dt
+            dtheta = Decimal((Node.r / Node.L) * (RW - LW) * dt)
             theta += dtheta
+            # print("dx: {}, dy: {}, theta: {}, rw: {}, lw: {}".format(dx, dy, dtheta, RW, LW))
+            # raw_input()
             node = [self.x + accum_dx, self.y + accum_dy]
             if not check_node(node, self.clear_val):
                 break
             step += np.sqrt(dx ** 2 + dy ** 2)
-        return self.x + accum_dx, self.y + accum_dy, np.rad2deg(theta), step
+        
+        # print('-----------------------------')
+        # print("acum_dx: {}, accum_dy: {}, theta: {}".format(accum_dx, accum_dy, theta))
+        # raw_input()
+        return self.x + accum_dx, self.y + accum_dy, Decimal(np.rad2deg(float(theta))), step
     
     def findRegion(self, current):
         region = [current[0], current[1], (current[2] + 360) % 360]
@@ -92,6 +100,8 @@ class Node():
                 
                 for i in steps_with_cost:
                     new_x, new_y, new_theta, new_step = visitingNode.do_action(i[0], i[1])
+                    # print("Cost: {}, Heuristic: {}, total: {}".format(visitingNode.cost2come + new_step, calc_cost([new_x, new_y], goal, new_step), \
+                    #                                             visitingNode.cost2come + new_step + calc_cost([new_x, new_y], goal, new_step)))
                     new_region = self.findRegion([new_x, new_y, new_theta])
                     new_keys = (int(new_region[0]), int(new_region[1]), int(new_region[2]))
                     # Check if the new node is already visited or not
@@ -104,19 +114,19 @@ class Node():
                                 new_keys].cost2go > new_node.cost2come + new_node.cost2go:
                                 accepted[new_keys] = new_node
                                 toBeVisited.put(new_node)
-                                Node.curve_list_start, Node.curve_list_end = plot_curve(visitingNode.x, visitingNode.y,
-                                                                                        visitingNode.theta, i[0], i[1],
-                                                                                        visitingNode.clear_val,
-                                                                                        Node.curve_list_start,
-                                                                                        Node.curve_list_end)
+                                # Node.curve_list_start, Node.curve_list_end = plot_curve(visitingNode.x, visitingNode.y,
+                                #                                                         visitingNode.theta, i[0], i[1],
+                                #                                                         visitingNode.clear_val,
+                                #                                                         Node.curve_list_start,
+                                #                                                         Node.curve_list_end)
                         else:
                             accepted[new_keys] = new_node
                             toBeVisited.put(new_node)
-                            Node.curve_list_start, Node.curve_list_end = plot_curve(visitingNode.x, visitingNode.y,
-                                                                                    visitingNode.theta, i[0], i[1],
-                                                                                    visitingNode.clear_val,
-                                                                                    Node.curve_list_start,
-                                                                                    Node.curve_list_end)
+                            # Node.curve_list_start, Node.curve_list_end = plot_curve(visitingNode.x, visitingNode.y,
+                            #                                                         visitingNode.theta, i[0], i[1],
+                            #                                                         visitingNode.clear_val,
+                            #                                                         Node.curve_list_start,
+                            #                                                         Node.curve_list_end)
                 visited[(int(region[0]), int(region[1]), int(region[2]))] = visitingNode
         
         return False
@@ -124,78 +134,82 @@ class Node():
 
 # Function to check if point is within goal threshold
 def goalReached(node, goal):
-    if (node[0] - goal[0]) ** 2 + (node[1] - goal[1]) ** 2 < 1.5 ** 2:
+    if (node[0] - Decimal(goal[0])) ** 2 + (node[1] - Decimal(goal[1])) ** 2 < 1.5 ** 2:
         return True
     return False
 
 
-def plot_curve(Xi, Yi, Thetai, UL, UR, clear_val, curve_list_start, curve_list_end):
-    UL = UL * 2 * np.pi / 60
-    UR = UR * 2 * np.pi / 60
-    t = 0
-    r = Node.r
-    L = Node.L
-    dt = 0.1
-    Xn = Xi
-    Yn = Yi
-    Thetan = 3.14 * Thetai / 180
-    # Xi, Yi,Thetai: Input point's coordinates
-    # Xs, Ys: Start point coordinates for plot function
-    # Xn, Yn, Thetan: End point coordintes
-    while t < 1:
-        t = t + dt
-        Xs = Xn
-        Ys = Yn
-        Xn += 0.5 * r * (UL + UR) * math.cos(Thetan) * dt
-        Yn += 0.5 * r * (UL + UR) * math.sin(Thetan) * dt
-        Thetan += (r / L) * (UR - UL) * dt
-        if check_node([Xn, Yn], clear_val):
-            curve_list_start.append([Xs, Ys])
-            curve_list_end.append([Xn, Yn])
-    Thetan = 180 * (Thetan) / 3.14
+# def plot_curve(Xi, Yi, Thetai, UL, UR, clear_val, curve_list_start, curve_list_end):
+#     UL = UL * 2 * np.pi / 60
+#     UR = UR * 2 * np.pi / 60
+#     t = 0
+#     r = Node.r
+#     L = Node.L
+#     dt = 0.1
+#     Xn = Xi
+#     Yn = Yi
+#     Thetan = 3.14 * Thetai / 180
+#     # Xi, Yi,Thetai: Input point's coordinates
+#     # Xs, Ys: Start point coordinates for plot function
+#     # Xn, Yn, Thetan: End point coordintes
+#     while t < 1:
+#         t = t + dt
+#         Xs = Xn
+#         Ys = Yn
+#         Xn += 0.5 * r * (UL + UR) * math.cos(Thetan) * dt
+#         Yn += 0.5 * r * (UL + UR) * math.sin(Thetan) * dt
+#         Thetan += (r / L) * (UR - UL) * dt
+#         if check_node([Xn, Yn], clear_val):
+#             curve_list_start.append([Xs, Ys])
+#             curve_list_end.append([Xn, Yn])
+#     Thetan = 180 * (Thetan) / 3.14
     
-    return curve_list_start, curve_list_end
+#     return curve_list_start, curve_list_end
 
 
 def check_node(node, clearance):
     # Checking border
-    if (node[0] / 10.0 < -5.0 + clearance / 10.0) or (node[0] / 10.0 > (5.0 - clearance / 10.0)) or \
-            (node[1] / 10.0 < -5.0 + clearance / 10.0) or (node[1] / 10.0 > 5.0 - clearance / 10.0):
+    clearance = Decimal(clearance)
+    node[0] = Decimal(node[0])
+    node[1] = Decimal(node[1])
+    # print(type(node[0]))
+    if (node[0] / Decimal(10.0) < -Decimal(5.0) + Decimal(clearance) / Decimal(10.0)) or (node[0] / Decimal(10.0) > (Decimal(5.0) - Decimal(clearance) / Decimal(10.0))) or \
+            (node[1] / Decimal(10.0) < -Decimal(5.0) + Decimal(clearance) / Decimal(10.0)) or (node[1] / Decimal(10.0) > Decimal(5.0) - Decimal(clearance) / Decimal(10.0)):
         return False
     
     # Bottom Left Circle
-    circle_bottom_left = (node[0] / 10.0 - (-2.0)) ** 2 + (node[1] / 10.0 - (-3.0)) ** 2
-    if circle_bottom_left < ((1 + clearance / 10.0) ** 2):
+    circle_bottom_left = (node[0] / Decimal(10.0) - Decimal((-2.0))) ** 2 + (node[1] / Decimal(10.0) - Decimal((-3.0))) ** 2
+    if circle_bottom_left < ((Decimal(1) + Decimal(clearance) / Decimal(10.0)) ** 2):
         return False
     
     # Bottom Right Circle
-    circle_bottom_right = (node[0] / 10.0 - (2.0)) ** 2 + (node[1] / 10.0 - (-3.0)) ** 2
-    if circle_bottom_right < ((1 + clearance / 10.0) ** 2):
+    circle_bottom_right = (node[0] / Decimal(10.0) - Decimal((2.0))) ** 2 + (node[1] / Decimal(10.0) - Decimal((-3.0))) ** 2
+    if circle_bottom_right < ((Decimal(1) + Decimal(clearance) / Decimal(10.0)) ** 2):
         return False
     
     # Circle top right
-    circle_top_right = (node[0] / 10.0 - (2.0)) ** 2 + (node[1] / 10.0 - (3.0)) ** 2
-    if circle_top_right < ((1 + clearance / 10.0) ** 2):
+    circle_top_right = (node[0] / Decimal(10.0) - Decimal((2.0))) ** 2 + (node[1] / Decimal(10.0) - Decimal((3.0))) ** 2
+    if circle_top_right < ((Decimal(1) + Decimal(clearance) / Decimal(10.0)) ** 2):
         return False
     
     # Circle Center
-    circle_center = (node[0] / 10.0 - (0.0)) ** 2 + (node[1] / 10.0 - (0.0)) ** 2
-    if circle_center < ((1 + clearance / 10.0) ** 2):
+    circle_center = (node[0] / Decimal(10.0) - Decimal((0.0))) ** 2 + (node[1] / Decimal(10.0) - Decimal((0.0))) ** 2
+    if circle_center < ((Decimal(1) + Decimal(clearance) / Decimal(10.0)) ** 2):
         return False
     
     # Left Square
-    if (node[0] / 10.0 > -(4.75 + clearance / 10.0)) and (node[0] / 10.0 < -3.25 + clearance / 10.0) and \
-            (node[1] / 10.0 < 0.75 + clearance / 10.0) and (node[1] / 10.0 > -(0.75 + clearance / 10.0)):
+    if (node[0] / Decimal(10.0) > -(Decimal(4.75) + Decimal(clearance) / Decimal(10.0))) and (node[0] / Decimal(10.0) < -Decimal(3.25) + Decimal(clearance) / Decimal(10.0)) and \
+            (node[1] / Decimal(10.0) < Decimal(0.75) + Decimal(clearance) / Decimal(10.0)) and (node[1] / Decimal(10.0) > -(Decimal(0.75) + Decimal(clearance) / Decimal(10.0))):
         return False
     
     # Left Top Square
-    if (node[0] / 10.0 > -(2.75 + clearance / 10.0)) and (node[0] / 10.0 < -1.25 + clearance / 10.0) \
-            and (node[1] / 10.0 < 3.75 + clearance / 10.0) and (node[1] / 10.0 > 2.25 - clearance / 10.0):
+    if (node[0] / Decimal(10.0) > -(Decimal(2.75) + Decimal(clearance) / Decimal(10.0))) and (node[0] / Decimal(10.0) < -Decimal(1.25) + Decimal(clearance) / Decimal(10.0)) \
+            and (node[1] / Decimal(10.0) < Decimal(3.75) + Decimal(clearance) / Decimal(10.0)) and (node[1] / Decimal(10.0) > Decimal(2.25) - Decimal(clearance) / Decimal(10.0)):
         return False
     
     # Right square
-    if (node[0] / 10.0 < 4.75 + clearance / 10.0) and (node[0] / 10.0 > 3.25 - clearance / 10.0) \
-            and (node[1] / 10.0 < 0.75 + clearance / 10.0) and (node[1] / 10.0 > -(0.75 + clearance / 10.0)):
+    if (node[0] / Decimal(10.0) < Decimal(4.75) + Decimal(clearance) / Decimal(10.0)) and (node[0] / Decimal(10.0) > Decimal(3.25) - Decimal(clearance) / Decimal(10.0)) \
+            and (node[1] / Decimal(10.0) < Decimal(0.75) + Decimal(clearance) / Decimal(10.0)) and (node[1] / Decimal(10.0) > -(Decimal(0.75) + Decimal(clearance) / Decimal(10.0))):
         return False
     
     return True
