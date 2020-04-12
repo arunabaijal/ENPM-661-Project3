@@ -77,13 +77,14 @@ class Node():
         return region
     
     def astar(self, goal, step_size, rpm1, rpm2):
-        
+        open('Nodes.txt', 'w').close()
         visited = {}
         accepted = {}
         toBeVisited = queue.PriorityQueue()
         toBeVisited.put(self)
         region = self.findRegion(self.current)  # creating unique indexing value
         accepted[(int(region[0]), int(region[1]), int(region[2]))] = self
+        f = open("Nodes.txt", "a+")
         steps_with_cost = self.possible_steps(rpm1, rpm2)
         j = 0
         # print(toBeVisited[0])
@@ -95,7 +96,10 @@ class Node():
             if key in visited.keys():  # check if node already visited
                 continue
             else:
+                toWrite = str(node)
+                f.write(toWrite[1:len(toWrite) - 1] + '\n')
                 if goalReached(node, goal):  # check if goal found
+                    f.close()
                     return visitingNode
                 
                 for i in steps_with_cost:
@@ -128,7 +132,7 @@ class Node():
                             #                                                         Node.curve_list_start,
                             #                                                         Node.curve_list_end)
                 visited[(int(region[0]), int(region[1]), int(region[2]))] = visitingNode
-        
+        f.close()
         return False
 
 
