@@ -305,7 +305,7 @@ def main():
     x = float(input('Please enter the x coordinate of the start point: '))
     y = float(input('Please enter the y coordinate of the start point: '))
     theta = float(input('Please enter the theta value of the robot (in deg): '))
-    start_point = [-1*x * 10, -1*y * 10, theta]
+    start_point = [-1*x * 10, -1*y * 10, theta - 180]
     
     # Check if the start node is valid or not
     while not check_node(start_point, radius + clearance):
@@ -313,7 +313,7 @@ def main():
         x = float(input('Please enter the x coordinate of the start point: '))
         y = float(input('Please enter the y coordinate of the start point: '))
         theta = float(input('Please enter the theta value of the robot (in deg): '))
-        start_point = [-1*x * 10, -1*y * 10, theta]
+        start_point = [-1*x * 10, -1*y * 10, theta - 180]
         # Take the goal point value as input from the user
     x_goal_point = float(input('Please enter the x coordinate of the goal point: '))
     y_goal_point = float(input('Please enter the y coordinate of the goal point: '))
