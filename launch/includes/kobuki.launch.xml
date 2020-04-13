@@ -2,13 +2,19 @@
   <arg name="base"/>
   <arg name="stacks"/>
   <arg name="3d_sensor"/>
+  <arg name="x_start"/>
+  <arg name="y_start"/>
+  <arg name="z_start"/>
+  <arg name="R_start"/>
+  <arg name="P_start"/>
+  <arg name="Y_start"/>
   
   <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find turtlebot_description)/robots/$(arg base)_$(arg stacks)_$(arg 3d_sensor).urdf.xacro'" />
   <param name="robot_description" command="$(arg urdf_file)" />
   
   <!-- Gazebo model spawner -->
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
-        args="-x 4 -y 3 -z 0.0 -R 0.0 -P 0.0 -Y 3.14 -unpause -urdf -param robot_description -model mobile_base"/>
+        args="-x $(arg x_start) -y $(arg y_start) -z $(arg z_start) -R $(arg R_start) -P $(arg P_start) -Y $(arg Y_start) -unpause -urdf -param robot_description -model mobile_base"/>
   
   <!-- Velocity muxer -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
