@@ -10,6 +10,7 @@ OpenCV 3.4.9
 numpy
 ROS Kinetic
 turtlebot_gazebo
+Turtlebot 2
 ```
 ## Running the code
 To clone the repository, run git clone https://github.com/arunabaijal/ENPM-661-Project3.git
@@ -17,10 +18,11 @@ Check out branch phase4
 Follow the following steps to successfully run the code:
 ```
 1. Clone the repository into your catkin workspace src folder as project3
-2. Navigate to folder project3/scripts
+2. Navigate to folder project3
 3. Run python3 Astar_rigid.py
-4. After successfully finding path and generation of file nodePath.txt in project3/scripts run catkin_make in your catkin_ws
-5. Run roslaunch project3 project3.launch x_start:=4 y_start:=4 Y_start:=3.14 where x_start, y_start, z_start, R_start, P_start and Y_start are the initial pose parameters. (By default the turtlebot is spawned at x_start:=4 y_start:=3 Y_start:=3.14. Note that, for a theta value of 180, the turtlebot should be spawned at yaw value 3.14)
+4. Change absolute path to location of nodePath.txt in astar_turtlebot.py at line 54
+5. After successfully finding path and generation of file nodePath.txt in project3 run catkin_make in your catkin_ws
+6. Run roslaunch project3 project3.launch x_start:=4 y_start:=3 Y_start:=3.14 where x_start, y_start, z_start, R_start, P_start and Y_start are the initial pose parameters. (By default the turtlebot is spawned at x_start:=4 y_start:=3 Y_start:=3.14. Note that, for a theta value of 180, the turtlebot should be spawned at yaw value 3.14)
 ```
 Upon running the code you would be asked to enter some details. See below for the sample input screenshot:
 $ python3 Astar_rigid.py 
