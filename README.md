@@ -10,7 +10,8 @@ OpenCV 3.4.9
 numpy
 ```
 ## Running the code
-
+To clone the repository, run git clone https://github.com/arunabaijal/ENPM-661-Project3.git
+Check out branch phase4
 Follow the following steps to successfully run the code:
 ```
 1. Go to the repository where the code is present on the terminal
