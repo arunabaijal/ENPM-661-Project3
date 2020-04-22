@@ -46,7 +46,7 @@ from Astar_rigid import Node
 
 
 def talker():
-    main()
+    #main()
     pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=10)
     rospy.init_node('astar_turtlebot', anonymous=True)
     rate = rospy.Rate(10)  # 1hz
@@ -58,9 +58,9 @@ def talker():
         if len(loc.split(',')) < 6:
             continue
     # float(lines.split(',')[3] = dx/dt  float(lines.split(',')[4]) = dy/dt  np.deg2rad(float(lines.split(',')[5]) * 100) = dx
-        new_location.linear.x = np.sqrt(float(loc.split(',')[3]) ** 2 + float(loc.split(',')[4]) ** 2)
-        new_location.angular.z = np.deg2rad(float(loc.split(',')[5]) * 10)
-        for i in range(10):
+        new_location.linear.x = np.sqrt(float(loc.split(',')[3]) ** 2 + float(loc.split(',')[4]) ** 2)/3
+        new_location.angular.z = np.deg2rad(float(loc.split(',')[5]) * 10)/3
+        for i in range(30):
             # new_location.angular.z = 0.314
             # t0 = rospy.Time.now().to_sec()
             # while not rospy.is_shutdown():
